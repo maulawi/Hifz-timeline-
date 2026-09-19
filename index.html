@@ -1,0 +1,1702 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
+<title>QURRA — Hifz Timeline</title>
+<meta name="description" content="See where your Hifz can take you. A calm, precise calculator for planning your memorisation journey.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,500&family=Inter:wght@400;500;600;700&family=Amiri:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --deep-green:#0B3026;
+    --forest-green:#123D31;
+    --cream:#F4EBD8;
+    --ivory:#FAF6EC;
+    --gold:#B89A5A;
+    --soft-gold:#D7C28A;
+    --charcoal:#1F211D;
+    --olive:#66685F;
+    --border-gold:#CDBD98;
+    --serif: 'Cormorant Garamond', Georgia, serif;
+    --sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    --arabic: 'Amiri', 'Traditional Arabic', serif;
+    --shadow-sm: 0 1px 2px rgba(31,33,29,0.06), 0 1px 1px rgba(31,33,29,0.04);
+    --shadow-md: 0 4px 16px rgba(11,48,38,0.08);
+    --shadow-lg: 0 12px 32px rgba(11,48,38,0.12);
+    --radius: 14px;
+    --radius-sm: 10px;
+  }
+
+  *{box-sizing:border-box;}
+  html{-webkit-text-size-adjust:100%;}
+  body{
+    margin:0;
+    background:var(--ivory);
+    background-image:
+      radial-gradient(circle at 15% 8%, rgba(184,154,90,0.05), transparent 45%),
+      radial-gradient(circle at 85% 92%, rgba(11,48,38,0.04), transparent 45%);
+    color:var(--charcoal);
+    font-family:var(--sans);
+    line-height:1.5;
+    -webkit-font-smoothing:antialiased;
+    min-height:100vh;
+    overflow-x:hidden;
+  }
+
+  @media (prefers-reduced-motion:no-preference){
+    .fade-in{ animation:fadeIn 260ms ease both; }
+    .rise-in{ animation:riseIn 300ms ease both; }
+  }
+  @keyframes fadeIn{ from{opacity:0;} to{opacity:1;} }
+  @keyframes riseIn{ from{opacity:0; transform:translateY(8px);} to{opacity:1; transform:translateY(0);} }
+
+  .wrap{
+    max-width:760px;
+    margin:0 auto;
+    padding:0 20px 64px;
+  }
+
+  /* ---------- HEADER ---------- */
+  header.top{
+    padding:38px 20px 28px;
+    text-align:center;
+    border-bottom:1px solid var(--border-gold);
+    background:linear-gradient(180deg, rgba(184,154,90,0.06), transparent);
+  }
+  .brand-mark{
+    font-family:var(--serif);
+    font-weight:600;
+    font-size:15px;
+    letter-spacing:6px;
+    color:var(--deep-green);
+    margin:0;
+  }
+  .tagline{
+    font-family:var(--sans);
+    font-size:10.5px;
+    letter-spacing:3px;
+    color:var(--gold);
+    text-transform:uppercase;
+    margin:6px 0 22px;
+    font-weight:600;
+  }
+  .app-title{
+    font-family:var(--serif);
+    font-weight:600;
+    font-size:clamp(28px, 6vw, 40px);
+    color:var(--deep-green);
+    margin:0;
+    letter-spacing:0.3px;
+  }
+  .app-subtitle{
+    font-size:14.5px;
+    color:var(--olive);
+    margin:10px auto 0;
+    max-width:420px;
+  }
+
+  /* ---------- STEP INDICATOR ---------- */
+  .step-indicator{
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    gap:8px;
+    padding:22px 20px 0;
+    font-size:11.5px;
+    letter-spacing:1.5px;
+    text-transform:uppercase;
+    color:var(--olive);
+  }
+  .step-indicator .dot{
+    width:6px;height:6px;border-radius:50%;
+    background:var(--border-gold);
+  }
+  .step-indicator .step-label{
+    padding:3px 0;
+  }
+  .step-indicator .step-label.active{
+    color:var(--deep-green);
+    font-weight:600;
+  }
+
+  /* ---------- SECTIONS / CARDS ---------- */
+  .section{
+    margin-top:32px;
+  }
+  .card{
+    background:var(--ivory);
+    border:1px solid var(--border-gold);
+    border-radius:var(--radius);
+    padding:24px 22px;
+    box-shadow:var(--shadow-sm);
+  }
+  .section-heading{
+    font-family:var(--serif);
+    font-weight:600;
+    font-size:24px;
+    color:var(--deep-green);
+    margin:0 0 4px;
+  }
+  .section-sub{
+    font-size:13.5px;
+    color:var(--olive);
+    margin:0 0 18px;
+  }
+  .field-label{
+    font-size:13px;
+    font-weight:600;
+    color:var(--charcoal);
+    margin:0 0 10px;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+  }
+  .divider{
+    height:1px;
+    background:linear-gradient(90deg, transparent, var(--border-gold), transparent);
+    margin:26px 0;
+    border:none;
+  }
+
+  /* ---------- JUZ GRID ---------- */
+  .juz-toolbar{
+    display:flex;
+    flex-wrap:wrap;
+    gap:8px;
+    margin-bottom:14px;
+  }
+  .btn-chip{
+    font-family:var(--sans);
+    font-size:12.5px;
+    font-weight:600;
+    color:var(--deep-green);
+    background:transparent;
+    border:1px solid var(--border-gold);
+    border-radius:20px;
+    padding:7px 14px;
+    cursor:pointer;
+    transition:background 160ms ease, border-color 160ms ease, color 160ms ease;
+  }
+  .btn-chip:hover{ background:rgba(184,154,90,0.1); }
+  .btn-chip:active{ transform:scale(0.98); }
+
+  .range-inline{
+    display:flex;
+    align-items:center;
+    gap:8px;
+    flex-wrap:wrap;
+    margin-bottom:14px;
+    padding:12px;
+    background:rgba(184,154,90,0.06);
+    border-radius:var(--radius-sm);
+    border:1px solid var(--border-gold);
+  }
+  .range-inline label{
+    font-size:12px;
+    color:var(--olive);
+    font-weight:600;
+  }
+  .range-inline select{
+    font-family:var(--sans);
+    font-size:13px;
+    padding:6px 8px;
+    border-radius:8px;
+    border:1px solid var(--border-gold);
+    background:var(--ivory);
+    color:var(--charcoal);
+  }
+
+  .juz-grid{
+    display:grid;
+    grid-template-columns:repeat(6, 1fr);
+    gap:8px;
+    margin-bottom:16px;
+  }
+  @media (max-width:420px){
+    .juz-grid{ grid-template-columns:repeat(5, 1fr); }
+  }
+  .juz-cell{
+    aspect-ratio:1;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-family:var(--sans);
+    font-size:13px;
+    font-weight:600;
+    color:var(--charcoal);
+    background:var(--ivory);
+    border:1.5px solid var(--border-gold);
+    border-radius:9px;
+    cursor:pointer;
+    user-select:none;
+    transition:background 150ms ease, border-color 150ms ease, color 150ms ease, transform 150ms ease;
+  }
+  .juz-cell:hover{ border-color:var(--gold); }
+  .juz-cell.selected{
+    background:var(--deep-green);
+    border-color:var(--deep-green);
+    color:var(--cream);
+  }
+  .juz-cell:active{ transform:scale(0.94); }
+
+  .juz-summary{
+    background:rgba(11,48,38,0.04);
+    border:1px solid var(--border-gold);
+    border-radius:var(--radius-sm);
+    padding:14px 16px;
+  }
+  .juz-summary .count{
+    font-family:var(--serif);
+    font-size:19px;
+    font-weight:600;
+    color:var(--deep-green);
+    margin:0 0 3px;
+  }
+  .juz-summary .list{
+    font-size:12.5px;
+    color:var(--olive);
+    margin:0;
+    line-height:1.6;
+  }
+
+  /* ---------- RADIO / OPTION GROUPS ---------- */
+  .option-group{
+    display:flex;
+    flex-direction:column;
+    gap:8px;
+  }
+  .option-row{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    padding:12px 14px;
+    border:1.5px solid var(--border-gold);
+    border-radius:var(--radius-sm);
+    cursor:pointer;
+    background:var(--ivory);
+    transition:border-color 150ms ease, background 150ms ease;
+  }
+  .option-row:hover{ border-color:var(--gold); }
+  .option-row.selected{
+    border-color:var(--deep-green);
+    background:rgba(11,48,38,0.045);
+  }
+  .option-row input[type=radio]{
+    accent-color:var(--deep-green);
+    width:16px;height:16px;
+    flex-shrink:0;
+  }
+  .option-row .option-text{
+    font-size:13.5px;
+    font-weight:500;
+    color:var(--charcoal);
+  }
+  .option-sub-panel{
+    margin-top:8px;
+    padding:14px;
+    background:rgba(184,154,90,0.06);
+    border:1px solid var(--border-gold);
+    border-radius:var(--radius-sm);
+    display:none;
+  }
+  .option-sub-panel.visible{ display:block; }
+  .option-sub-panel select,
+  .option-sub-panel input[type=date]{
+    width:100%;
+    font-family:var(--sans);
+    font-size:14px;
+    padding:10px 12px;
+    border-radius:8px;
+    border:1px solid var(--border-gold);
+    background:var(--ivory);
+    color:var(--charcoal);
+  }
+
+  .inline-error{
+    font-size:12.5px;
+    color:#8a4a2b;
+    background:rgba(184,90,90,0.09);
+    border:1px solid rgba(184,90,90,0.35);
+    border-radius:8px;
+    padding:9px 12px;
+    margin-top:10px;
+    display:none;
+  }
+  .inline-error.visible{ display:block; }
+
+  /* ---------- PACE CHIP GRID (step 2) ---------- */
+  .pace-grid{
+    display:grid;
+    grid-template-columns:repeat(3, 1fr);
+    gap:9px;
+    margin-bottom:6px;
+  }
+  @media (max-width:380px){
+    .pace-grid{ grid-template-columns:repeat(2, 1fr); }
+  }
+  .pace-cell{
+    padding:14px 8px;
+    text-align:center;
+    border:1.5px solid var(--border-gold);
+    border-radius:var(--radius-sm);
+    cursor:pointer;
+    background:var(--ivory);
+    font-size:13.5px;
+    font-weight:600;
+    color:var(--charcoal);
+    transition:background 150ms ease, border-color 150ms ease, color 150ms ease;
+  }
+  .pace-cell:hover{ border-color:var(--gold); }
+  .pace-cell.selected{
+    background:var(--deep-green);
+    border-color:var(--deep-green);
+    color:var(--cream);
+  }
+
+  .custom-pace-row{
+    display:none;
+    align-items:center;
+    gap:10px;
+    margin:14px 0 6px;
+    padding:12px 14px;
+    background:rgba(184,154,90,0.06);
+    border:1px solid var(--border-gold);
+    border-radius:var(--radius-sm);
+  }
+  .custom-pace-row.visible{ display:flex; flex-wrap:wrap; }
+  .custom-pace-row label{ font-size:12.5px; font-weight:600; color:var(--olive); }
+  .custom-pace-row input[type=number]{
+    width:110px;
+    font-family:var(--sans);
+    font-size:14px;
+    padding:8px 10px;
+    border-radius:8px;
+    border:1px solid var(--border-gold);
+    background:var(--ivory);
+    color:var(--charcoal);
+  }
+
+  .days-grid{
+    display:grid;
+    grid-template-columns:repeat(7, 1fr);
+    gap:6px;
+    margin-bottom:6px;
+  }
+  @media (max-width:360px){
+    .days-grid{ grid-template-columns:repeat(4, 1fr); }
+  }
+  .day-cell{
+    padding:11px 4px;
+    text-align:center;
+    border:1.5px solid var(--border-gold);
+    border-radius:9px;
+    cursor:pointer;
+    background:var(--ivory);
+    font-size:13px;
+    font-weight:600;
+    color:var(--charcoal);
+    transition:background 150ms ease, border-color 150ms ease, color 150ms ease;
+  }
+  .day-cell:hover{ border-color:var(--gold); }
+  .day-cell.selected{
+    background:var(--deep-green);
+    border-color:var(--deep-green);
+    color:var(--cream);
+  }
+
+  .time-grid{
+    display:grid;
+    grid-template-columns:repeat(3, 1fr);
+    gap:8px;
+  }
+  @media (max-width:380px){
+    .time-grid{ grid-template-columns:repeat(2, 1fr); }
+  }
+  .time-cell{
+    padding:11px 6px;
+    text-align:center;
+    border:1.5px solid var(--border-gold);
+    border-radius:9px;
+    cursor:pointer;
+    background:var(--ivory);
+    font-size:12.5px;
+    font-weight:600;
+    color:var(--charcoal);
+    transition:background 150ms ease, border-color 150ms ease, color 150ms ease;
+  }
+  .time-cell:hover{ border-color:var(--gold); }
+  .time-cell.selected{
+    background:var(--soft-gold);
+    border-color:var(--gold);
+    color:var(--deep-green);
+  }
+  .time-note{
+    font-size:12px;
+    color:var(--olive);
+    margin-top:10px;
+    font-style:italic;
+  }
+
+  /* ---------- BUTTONS ---------- */
+  .btn-row{
+    display:flex;
+    gap:10px;
+    margin-top:26px;
+  }
+  .btn{
+    font-family:var(--sans);
+    font-size:14.5px;
+    font-weight:600;
+    padding:14px 22px;
+    border-radius:11px;
+    border:1.5px solid transparent;
+    cursor:pointer;
+    transition:background 160ms ease, border-color 160ms ease, transform 80ms ease, opacity 160ms ease;
+    flex:1;
+    text-align:center;
+  }
+  .btn:active{ transform:scale(0.985); }
+  .btn-primary{
+    background:var(--deep-green);
+    color:var(--cream);
+  }
+  .btn-primary:hover{ background:var(--forest-green); }
+  .btn-secondary{
+    background:transparent;
+    border-color:var(--border-gold);
+    color:var(--deep-green);
+  }
+  .btn-secondary:hover{ border-color:var(--gold); background:rgba(184,154,90,0.08); }
+  .btn-full{ flex:1 1 100%; }
+
+  /* ---------- RESULTS ---------- */
+  .hero-journey{
+    text-align:center;
+    padding:8px 0 4px;
+  }
+  .hero-journey .eyebrow{
+    font-size:11.5px;
+    letter-spacing:2.5px;
+    text-transform:uppercase;
+    color:var(--gold);
+    font-weight:700;
+    margin:0 0 12px;
+  }
+  .hero-journey .journey-line{
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    gap:16px;
+    flex-wrap:wrap;
+  }
+  .hero-journey .juz-num{
+    font-family:var(--serif);
+    font-size:clamp(36px, 10vw, 54px);
+    font-weight:700;
+    color:var(--deep-green);
+    line-height:1;
+  }
+  .hero-journey .juz-caption{
+    font-size:11px;
+    letter-spacing:1.5px;
+    text-transform:uppercase;
+    color:var(--olive);
+    margin-top:4px;
+  }
+  .hero-journey .arrow{
+    font-size:22px;
+    color:var(--gold);
+  }
+  .completion-line{
+    text-align:center;
+    margin-top:22px;
+  }
+  .completion-line .label{
+    font-size:12px;
+    letter-spacing:1.5px;
+    text-transform:uppercase;
+    color:var(--olive);
+    margin:0 0 6px;
+  }
+  .completion-line .value{
+    font-family:var(--serif);
+    font-size:30px;
+    font-weight:600;
+    color:var(--deep-green);
+    margin:0;
+  }
+  .completion-line .pace-note{
+    font-size:13px;
+    color:var(--olive);
+    margin-top:6px;
+  }
+
+  .fully-memorised-banner{
+    text-align:center;
+    padding:20px 16px;
+  }
+  .fully-memorised-banner .icon{
+    font-size:30px;
+    margin-bottom:10px;
+    color:var(--gold);
+  }
+  .fully-memorised-banner p{
+    font-family:var(--serif);
+    font-size:19px;
+    color:var(--deep-green);
+    margin:0;
+  }
+
+  /* Summary card grid */
+  .summary-grid{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:1px;
+    background:var(--border-gold);
+    border:1px solid var(--border-gold);
+    border-radius:var(--radius-sm);
+    overflow:hidden;
+    margin-top:10px;
+  }
+  .summary-cell{
+    background:var(--ivory);
+    padding:16px 14px;
+  }
+  .summary-cell .k{
+    font-size:10.5px;
+    letter-spacing:1.5px;
+    text-transform:uppercase;
+    color:var(--olive);
+    font-weight:700;
+    margin:0 0 6px;
+  }
+  .summary-cell .v{
+    font-family:var(--serif);
+    font-size:19px;
+    font-weight:600;
+    color:var(--deep-green);
+    margin:0;
+    line-height:1.25;
+  }
+  .summary-cell.full{ grid-column:1 / -1; }
+
+  /* Target date comparison */
+  .target-compare{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:12px;
+    margin-top:14px;
+  }
+  @media (max-width:480px){
+    .target-compare{ grid-template-columns:1fr; }
+  }
+  .target-compare .tc-box{
+    padding:14px 16px;
+    border-radius:var(--radius-sm);
+    border:1px solid var(--border-gold);
+    background:rgba(184,154,90,0.05);
+  }
+  .target-compare .tc-box.required{
+    background:rgba(11,48,38,0.045);
+    border-color:var(--deep-green);
+  }
+  .tc-box .tc-label{
+    font-size:11px;
+    letter-spacing:1px;
+    text-transform:uppercase;
+    color:var(--olive);
+    font-weight:700;
+    margin:0 0 6px;
+  }
+  .tc-box .tc-value{
+    font-size:15px;
+    font-weight:600;
+    color:var(--deep-green);
+    margin:0;
+  }
+
+  /* ---------- TIMELINE ---------- */
+  .timeline-scroll{
+    overflow-x:auto;
+    -webkit-overflow-scrolling:touch;
+    padding:24px 4px 16px;
+    margin:0 -4px;
+  }
+  .timeline-track{
+    display:flex;
+    align-items:flex-end;
+    min-width:max-content;
+    padding:0 8px;
+  }
+  .timeline-item{
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    position:relative;
+    width:38px;
+    flex-shrink:0;
+  }
+  .timeline-item .connector{
+    position:absolute;
+    top:17px;
+    left:-19px;
+    width:38px;
+    height:2px;
+    background:var(--border-gold);
+    z-index:0;
+  }
+  .timeline-item:first-child .connector{ display:none; }
+  .timeline-item.completed .connector{ background:var(--gold); }
+  .timeline-item .node{
+    width:34px;
+    height:34px;
+    border-radius:50%;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-size:11px;
+    font-weight:700;
+    z-index:1;
+    border:2px solid var(--border-gold);
+    background:var(--ivory);
+    color:var(--olive);
+    transition:background 200ms ease, border-color 200ms ease, color 200ms ease;
+  }
+  .timeline-item.completed .node{
+    background:var(--deep-green);
+    border-color:var(--deep-green);
+    color:var(--soft-gold);
+  }
+  .timeline-item.current .node{
+    background:var(--gold);
+    border-color:var(--gold);
+    color:var(--deep-green);
+    box-shadow:0 0 0 4px rgba(184,154,90,0.22);
+  }
+  .timeline-item.target .node{
+    border-color:var(--deep-green);
+    border-style:dashed;
+  }
+  .timeline-item .here-tag{
+    position:absolute;
+    top:-22px;
+    font-size:8.5px;
+    letter-spacing:1px;
+    font-weight:700;
+    color:var(--deep-green);
+    white-space:nowrap;
+    background:var(--soft-gold);
+    padding:2px 6px;
+    border-radius:6px;
+  }
+  .timeline-item .target-tag{
+    position:absolute;
+    bottom:-20px;
+    font-size:8.5px;
+    letter-spacing:0.5px;
+    font-weight:700;
+    color:var(--deep-green);
+    white-space:nowrap;
+  }
+  .timeline-legend{
+    display:flex;
+    gap:16px;
+    flex-wrap:wrap;
+    justify-content:center;
+    font-size:11.5px;
+    color:var(--olive);
+    margin-top:14px;
+  }
+  .timeline-legend .lg-item{ display:flex; align-items:center; gap:6px; }
+  .timeline-legend .lg-dot{ width:10px; height:10px; border-radius:50%; flex-shrink:0; }
+
+  /* ---------- MILESTONE ---------- */
+  .milestone-box{
+    display:flex;
+    align-items:center;
+    gap:16px;
+  }
+  .milestone-box .m-juz{
+    font-family:var(--serif);
+    font-size:32px;
+    font-weight:700;
+    color:var(--deep-green);
+    flex-shrink:0;
+  }
+  .milestone-box .m-text p{ margin:0; font-size:13.5px; color:var(--olive); }
+
+  /* ---------- PACE COMPARISON LIST ---------- */
+  .compare-list{
+    display:flex;
+    flex-direction:column;
+    gap:8px;
+  }
+  .compare-row{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    padding:12px 14px;
+    border:1px solid var(--border-gold);
+    border-radius:var(--radius-sm);
+    background:var(--ivory);
+  }
+  .compare-row.highlight{
+    border-color:var(--deep-green);
+    background:rgba(11,48,38,0.045);
+  }
+  .compare-row .cr-pace{
+    font-size:13.5px;
+    font-weight:600;
+    color:var(--charcoal);
+  }
+  .compare-row .cr-tag{
+    font-size:10px;
+    letter-spacing:1px;
+    text-transform:uppercase;
+    color:var(--deep-green);
+    font-weight:700;
+    margin-left:8px;
+  }
+  .compare-row .cr-time{
+    font-size:13.5px;
+    color:var(--olive);
+    font-weight:500;
+  }
+
+  /* ---------- JOURNEY BY YEAR ---------- */
+  .year-list{
+    display:flex;
+    flex-direction:column;
+    gap:0;
+  }
+  .year-row{
+    display:flex;
+    align-items:center;
+    gap:16px;
+    padding:14px 4px;
+    border-bottom:1px solid var(--border-gold);
+  }
+  .year-row:last-child{ border-bottom:none; }
+  .year-row .yr{
+    font-family:var(--serif);
+    font-size:20px;
+    font-weight:600;
+    color:var(--gold);
+    width:64px;
+    flex-shrink:0;
+  }
+  .year-row .yr-range{
+    font-size:14px;
+    color:var(--charcoal);
+    font-weight:500;
+  }
+
+  .empty-note{
+    font-size:13px;
+    color:var(--olive);
+    text-align:center;
+    padding:10px 0;
+  }
+
+  footer.app-footer{
+    text-align:center;
+    margin-top:40px;
+    font-size:11.5px;
+    color:var(--olive);
+    opacity:0.7;
+  }
+
+  .screen{ display:none; }
+  .screen.active{ display:block; }
+
+  ::selection{ background:var(--soft-gold); color:var(--deep-green); }
+</style>
+</head>
+<body>
+
+<header class="top">
+  <p class="brand-mark">QURRA</p>
+  <p class="tagline">LEARN · PRESERVE · GROW</p>
+  <h1 class="app-title">Hifz Timeline</h1>
+  <p class="app-subtitle">Plan your path from where you are to where you want to go.</p>
+</header>
+
+<div class="step-indicator" id="stepIndicator"></div>
+
+<main class="wrap" id="app"></main>
+
+<footer class="app-footer wrap">A QURRA product — deterministic estimates to help you plan, not a guarantee.</footer>
+
+<script>
+/* =========================================================
+   DATA
+   ========================================================= */
+const TOTAL_JUZ = 30;
+const PAGES_PER_JUZ = 20;
+const TOTAL_QURAN_PAGES = 604;
+const WEEKS_PER_MONTH = 4.345;
+const WEEKS_PER_YEAR = 52.143;
+
+const PACE_PRESETS = [
+  { id:'quarter', label:'¼ page', value:0.25 },
+  { id:'half',    label:'½ page', value:0.5 },
+  { id:'one',     label:'1 page', value:1 },
+  { id:'two',     label:'2 pages', value:2 },
+  { id:'custom',  label:'Custom', value:null }
+];
+
+const TIME_OPTIONS = ['15 min','30 min','45 min','60 min','90 min','2+ hours'];
+
+const COMPARISON_SCENARIOS = [
+  { pages:0.25, days:5 },
+  { pages:0.5,  days:5 },
+  { pages:0.5,  days:6 },
+  { pages:1,    days:5 },
+  { pages:1,    days:6 }
+];
+
+const MONTHS = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+
+/* =========================================================
+   STATE
+   ========================================================= */
+function defaultState(){
+  return {
+    screen: 'step1', // 'step1' | 'step2' | 'results'
+    selectedJuz: new Set(),
+    planMode: 'all30', // 'all30' | 'specificJuz' | 'targetDate'
+    targetJuzNumber: null,
+    targetDate: '',
+    pacePresetId: 'half',
+    customPagesPerDay: '',
+    daysPerWeek: null,
+    timeOption: null,
+    step1Error: '',
+    step2Error: '',
+    rangeFrom: null,
+    rangeTo: null
+  };
+}
+var state = defaultState();
+
+/* =========================================================
+   CALCULATION FUNCTIONS
+   ========================================================= */
+function getSelectedJuzSorted(){
+  return Array.from(state.selectedJuz).sort((a,b)=>a-b);
+}
+
+function getUnfinishedJuzSorted(){
+  const out = [];
+  for (let j=1;j<=TOTAL_JUZ;j++){ if (!state.selectedJuz.has(j)) out.push(j); }
+  return out;
+}
+
+function formatJuzRanges(sortedArr){
+  if (!sortedArr.length) return 'None yet';
+  const ranges = [];
+  let start = sortedArr[0], end = sortedArr[0];
+  for (let i=1;i<sortedArr.length;i++){
+    if (sortedArr[i] === end+1){ end = sortedArr[i]; }
+    else { ranges.push(start===end ? `${start}` : `${start}–${end}`); start = sortedArr[i]; end = sortedArr[i]; }
+  }
+  ranges.push(start===end ? `${start}` : `${start}–${end}`);
+  return 'Juz ' + ranges.join(', ');
+}
+
+function getCurrentMemorisedPages(){
+  return state.selectedJuz.size * PAGES_PER_JUZ;
+}
+
+function getDailyPagesPerDay(){
+  if (state.pacePresetId === 'custom'){
+    const v = parseFloat(state.customPagesPerDay);
+    return (isFinite(v) && v > 0) ? v : 0;
+  }
+  const preset = PACE_PRESETS.find(p => p.id === state.pacePresetId);
+  return preset ? preset.value : 0;
+}
+
+function getPaceLabel(){
+  if (state.pacePresetId === 'custom'){
+    const v = parseFloat(state.customPagesPerDay);
+    return (isFinite(v) && v > 0) ? `${formatNum(v)} page${v===1?'':'s'}` : 'Custom pace';
+  }
+  const preset = PACE_PRESETS.find(p => p.id === state.pacePresetId);
+  return preset ? preset.label : '';
+}
+
+function getWeeklyPace(){
+  const pagesPerDay = getDailyPagesPerDay();
+  const days = state.daysPerWeek || 0;
+  return pagesPerDay * days;
+}
+
+function isFullyMemorised(){
+  return state.selectedJuz.size >= TOTAL_JUZ;
+}
+
+/* Target pages for the "all30" / "targetDate" plan modes (whole Quran). */
+function getRemainingPagesForFullPlan(){
+  return Math.max(TOTAL_QURAN_PAGES - getCurrentMemorisedPages(), 0);
+}
+
+/* Target pages for "specificJuz" plan mode, using the ascending
+   fill-in-order model: the user completes the next unfinished Juz,
+   in ascending order, one at a time. */
+function getStepsToReachJuz(targetJuz){
+  const unfinished = getUnfinishedJuzSorted();
+  const idx = unfinished.indexOf(targetJuz);
+  if (idx === -1) return 0; // already memorised
+  return idx + 1;
+}
+
+function getRemainingPagesForTarget(){
+  if (state.planMode === 'specificJuz' && state.targetJuzNumber){
+    if (state.selectedJuz.has(state.targetJuzNumber)) return 0;
+    return getStepsToReachJuz(state.targetJuzNumber) * PAGES_PER_JUZ;
+  }
+  // all30 and targetDate both target the full Quran
+  return getRemainingPagesForFullPlan();
+}
+
+function getEstimatedWeeks(remainingPages, weeklyPace){
+  if (remainingPages <= 0) return 0;
+  if (!(weeklyPace > 0)) return Infinity;
+  return remainingPages / weeklyPace;
+}
+
+function formatNum(n, decimals){
+  if (!isFinite(n)) return '—';
+  const d = decimals === undefined ? 1 : decimals;
+  const rounded = Math.round(n * Math.pow(10,d)) / Math.pow(10,d);
+  return rounded % 1 === 0 ? String(rounded) : rounded.toFixed(d);
+}
+
+function formatDuration(weeks){
+  if (!isFinite(weeks)) return 'Not calculable at this pace';
+  if (weeks <= 0) return 'Already reached';
+  if (weeks < 1) return 'less than a week';
+  if (weeks < 8) {
+    const w = Math.round(weeks);
+    return `${w} week${w===1?'':'s'}`;
+  }
+  const months = weeks / WEEKS_PER_MONTH;
+  if (months < 18){
+    const m = formatNum(months, months < 3 ? 1 : 0);
+    return `~${m} month${m==='1'?'':'s'}`;
+  }
+  const years = weeks / WEEKS_PER_YEAR;
+  const y = formatNum(years, years < 5 ? 1 : 0);
+  return `~${y} year${y==='1'?'':'s'}`;
+}
+
+function getNextMilestone(){
+  if (isFullyMemorised()) return null;
+  const unfinished = getUnfinishedJuzSorted();
+  const nextJuz = unfinished[0];
+  const weeklyPace = getWeeklyPace();
+  const weeks = weeklyPace > 0 ? PAGES_PER_JUZ / weeklyPace : Infinity;
+  return { nextJuz, weeks };
+}
+
+function getRequiredPaceForTargetDate(){
+  if (!state.targetDate) return { invalid:true, reason:'missing' };
+  const target = new Date(state.targetDate + 'T00:00:00');
+  if (isNaN(target.getTime())) return { invalid:true, reason:'missing' };
+  const today = startOfDay(new Date());
+  const msPerWeek = 7 * 24 * 60 * 60 * 1000;
+  const weeksAvailable = (target.getTime() - today.getTime()) / msPerWeek;
+  if (weeksAvailable <= 0) return { invalid:true, reason:'past', targetDateObj: target };
+
+  if (isFullyMemorised()) return { invalid:true, reason:'alreadyReached' };
+  const remainingPages = getRemainingPagesForFullPlan();
+
+  const requiredWeeklyPace = remainingPages / weeksAvailable;
+  const requiredDaysPerWeek = (state.daysPerWeek && state.daysPerWeek > 0) ? state.daysPerWeek : 6;
+  const requiredPagesPerDay = requiredWeeklyPace / requiredDaysPerWeek;
+  return { invalid:false, requiredWeeklyPace, requiredPagesPerDay, requiredDaysPerWeek, weeksAvailable, targetDateObj: target };
+}
+
+function getPaceComparisonRows(){
+  const remainingPages = getRemainingPagesForTarget();
+  if (remainingPages <= 0) return [];
+  const rows = COMPARISON_SCENARIOS.map(sc => {
+    const weeklyPace = sc.pages * sc.days;
+    const weeks = getEstimatedWeeks(remainingPages, weeklyPace);
+    return {
+      label: `${paceValueLabel(sc.pages)} × ${sc.days} days/week`,
+      duration: formatDuration(weeks),
+      isUserPace: false
+    };
+  });
+
+  const userPagesPerDay = getDailyPagesPerDay();
+  const userDays = state.daysPerWeek || 0;
+  let matched = false;
+  if (userPagesPerDay > 0 && userDays > 0){
+    for (const sc of COMPARISON_SCENARIOS){
+      if (Math.abs(sc.pages - userPagesPerDay) < 0.001 && sc.days === userDays){ matched = true; break; }
+    }
+  }
+  rows.forEach((r,i) => {
+    const sc = COMPARISON_SCENARIOS[i];
+    if (userPagesPerDay > 0 && userDays > 0 && Math.abs(sc.pages - userPagesPerDay) < 0.001 && sc.days === userDays){
+      r.isUserPace = true;
+    }
+  });
+
+  if (!matched && userPagesPerDay > 0 && userDays > 0){
+    const weeklyPace = userPagesPerDay * userDays;
+    const weeks = getEstimatedWeeks(remainingPages, weeklyPace);
+    rows.push({
+      label: `${paceValueLabel(userPagesPerDay)} × ${userDays} days/week`,
+      duration: formatDuration(weeks),
+      isUserPace: true
+    });
+  }
+  return rows;
+}
+
+function paceValueLabel(pages){
+  if (pages === 0.25) return '¼ page';
+  if (pages === 0.5) return '½ page';
+  if (pages === 1) return '1 page';
+  if (pages === 2) return '2 pages';
+  return `${formatNum(pages)} page${pages===1?'':'s'}`;
+}
+
+function getJourneyByYear(){
+  if (isFullyMemorised()) return [];
+  const weeklyPace = getWeeklyPace();
+  if (!(weeklyPace > 0)) return [];
+
+  const unfinished = getUnfinishedJuzSorted();
+  const today = new Date();
+  let stopAtJuz = null;
+  if (state.planMode === 'specificJuz' && state.targetJuzNumber && !state.selectedJuz.has(state.targetJuzNumber)){
+    stopAtJuz = state.targetJuzNumber;
+  }
+
+  const yearMap = new Map();
+  const order = [];
+  let cumPages = 0;
+
+  for (let i=0;i<unfinished.length;i++){
+    const juz = unfinished[i];
+    cumPages += PAGES_PER_JUZ;
+    const weeks = cumPages / weeklyPace;
+    const days = Math.round(weeks * 7);
+    const completionDate = addDays(today, days);
+    const year = completionDate.getFullYear();
+    if (!yearMap.has(year)){
+      yearMap.set(year, { first: juz, last: juz });
+      order.push(year);
+    } else {
+      yearMap.get(year).last = juz;
+    }
+    if (stopAtJuz !== null && juz === stopAtJuz) break;
+  }
+
+  return order.map(year => {
+    const { first, last } = yearMap.get(year);
+    return { year, first, last };
+  });
+}
+
+/* =========================================================
+   DATE FUNCTIONS
+   ========================================================= */
+function startOfDay(d){
+  const c = new Date(d);
+  c.setHours(0,0,0,0);
+  return c;
+}
+
+function addDays(date, days){
+  const d = new Date(date);
+  d.setDate(d.getDate() + days);
+  return d;
+}
+
+function formatDateHuman(date){
+  return `${date.getDate()} ${MONTHS[date.getMonth()]} ${date.getFullYear()}`;
+}
+
+function formatMonthYear(date){
+  return `${MONTHS[date.getMonth()]} ${date.getFullYear()}`;
+}
+
+function todayISODate(){
+  const d = new Date();
+  const yyyy = d.getFullYear();
+  const mm = String(d.getMonth()+1).padStart(2,'0');
+  const dd = String(d.getDate()).padStart(2,'0');
+  return `${yyyy}-${mm}-${dd}`;
+}
+
+/* =========================================================
+   RENDER FUNCTIONS
+   ========================================================= */
+const appEl = document.getElementById('app');
+const stepIndicatorEl = document.getElementById('stepIndicator');
+
+function render(){
+  renderStepIndicator();
+  if (state.screen === 'step1') appEl.innerHTML = renderStep1();
+  else if (state.screen === 'step2') appEl.innerHTML = renderStep2();
+  else appEl.innerHTML = renderResults();
+  appEl.classList.remove('fade-in');
+  void appEl.offsetWidth;
+  appEl.classList.add('fade-in');
+  afterRenderBindings();
+}
+
+function renderStepIndicator(){
+  const steps = [
+    { id:'step1', label:'1 · Where you are' },
+    { id:'step2', label:'2 · Your pace' },
+    { id:'results', label:'Results' }
+  ];
+  stepIndicatorEl.innerHTML = steps.map((s,i) => {
+    const active = state.screen === s.id;
+    return (i>0 ? '<span class="dot"></span>' : '') +
+      `<span class="step-label${active?' active':''}">${s.label}</span>`;
+  }).join('');
+}
+
+function renderStep1(){
+  const sortedSel = getSelectedJuzSorted();
+  const count = state.selectedJuz.size;
+
+  const juzCells = Array.from({length:TOTAL_JUZ}, (_,i)=>i+1).map(j => {
+    const sel = state.selectedJuz.has(j);
+    return `<div class="juz-cell${sel?' selected':''}" data-juz="${j}" role="button" aria-pressed="${sel}">${j}</div>`;
+  }).join('');
+
+  const fromOptions = Array.from({length:TOTAL_JUZ},(_,i)=>i+1).map(j=>`<option value="${j}">${j}</option>`).join('');
+  const toOptions = fromOptions;
+
+  const targetJuzOptions = Array.from({length:TOTAL_JUZ},(_,i)=>i+1).map(j=>{
+    const already = state.selectedJuz.has(j);
+    const sel = state.targetJuzNumber === j ? ' selected' : '';
+    return `<option value="${j}"${sel}>Juz ${j}${already?' (already memorised)':''}</option>`;
+  }).join('');
+
+  return `
+  <div class="section rise-in">
+    <div class="card">
+      <h2 class="section-heading">Where are you in your Hifz journey?</h2>
+      <p class="section-sub">How much have you memorised?</p>
+
+      <div class="juz-toolbar">
+        <button type="button" class="btn-chip" data-action="open-range">Select range</button>
+        <button type="button" class="btn-chip" data-action="select-all">Select all</button>
+        <button type="button" class="btn-chip" data-action="clear-all">Clear all</button>
+      </div>
+
+      <div class="range-inline" id="rangePanel" style="display:none;">
+        <label for="rangeFrom">From</label>
+        <select id="rangeFrom">${fromOptions}</select>
+        <label for="rangeTo">To</label>
+        <select id="rangeTo">${toOptions}</select>
+        <button type="button" class="btn-chip" data-action="apply-range">Apply</button>
+      </div>
+
+      <div class="juz-grid" id="juzGrid">${juzCells}</div>
+
+      <div class="juz-summary" id="juzSummary">
+        <p class="count" id="juzCount">${count} Juz memorised</p>
+        <p class="list" id="juzList">Memorised: ${count ? formatJuzRanges(sortedSel) : 'None yet'}</p>
+      </div>
+
+      <hr class="divider">
+
+      <p class="section-sub" style="margin-bottom:12px;">What would you like to plan toward? <span style="opacity:0.7;">(optional)</span></p>
+      <div class="option-group" id="planModeGroup">
+        <label class="option-row${state.planMode==='all30'?' selected':''}" data-mode="all30">
+          <input type="radio" name="planMode" value="all30" ${state.planMode==='all30'?'checked':''}>
+          <span class="option-text">Complete all 30 Juz</span>
+        </label>
+        <label class="option-row${state.planMode==='specificJuz'?' selected':''}" data-mode="specificJuz">
+          <input type="radio" name="planMode" value="specificJuz" ${state.planMode==='specificJuz'?'checked':''}>
+          <span class="option-text">A specific Juz</span>
+        </label>
+        <div class="option-sub-panel${state.planMode==='specificJuz'?' visible':''}" id="specificJuzPanel">
+          <select id="targetJuzSelect">
+            <option value="" ${state.targetJuzNumber?'':'selected'} disabled>Choose a Juz…</option>
+            ${targetJuzOptions}
+          </select>
+        </div>
+        <label class="option-row${state.planMode==='targetDate'?' selected':''}" data-mode="targetDate">
+          <input type="radio" name="planMode" value="targetDate" ${state.planMode==='targetDate'?'checked':''}>
+          <span class="option-text">A target date</span>
+        </label>
+        <div class="option-sub-panel${state.planMode==='targetDate'?' visible':''}" id="targetDatePanel">
+          <input type="date" id="targetDateInput" value="${state.targetDate||''}">
+        </div>
+      </div>
+
+      <div class="inline-error${state.step1Error?' visible':''}" id="step1Error">${state.step1Error||''}</div>
+
+      <div class="btn-row">
+        <button type="button" class="btn btn-primary btn-full" data-action="go-step2">Continue</button>
+      </div>
+    </div>
+  </div>`;
+}
+
+function renderStep2(){
+  const paceCells = PACE_PRESETS.map(p => {
+    const sel = state.pacePresetId === p.id;
+    return `<div class="pace-cell${sel?' selected':''}" data-pace="${p.id}">${p.label}</div>`;
+  }).join('');
+
+  const dayCells = Array.from({length:7},(_,i)=>i+1).map(d => {
+    const sel = state.daysPerWeek === d;
+    return `<div class="day-cell${sel?' selected':''}" data-day="${d}">${d}</div>`;
+  }).join('');
+
+  const timeCells = TIME_OPTIONS.map(t => {
+    const sel = state.timeOption === t;
+    return `<div class="time-cell${sel?' selected':''}" data-time="${t}">${t}</div>`;
+  }).join('');
+
+  return `
+  <div class="section rise-in">
+    <div class="card">
+      <h2 class="section-heading">How do you want to build your Hifz?</h2>
+      <p class="section-sub">Choose your daily new-Hifz pace.</p>
+
+      <div class="pace-grid" id="paceGrid">${paceCells}</div>
+      <div class="custom-pace-row${state.pacePresetId==='custom'?' visible':''}" id="customPaceRow">
+        <label for="customPaceInput">Pages per day</label>
+        <input type="number" id="customPaceInput" min="0.05" max="30" step="0.05" value="${state.customPagesPerDay}" placeholder="e.g. 1.5">
+      </div>
+
+      <hr class="divider">
+
+      <p class="field-label">How many days per week?</p>
+      <div class="days-grid" id="daysGrid">${dayCells}</div>
+
+      <hr class="divider">
+
+      <p class="field-label">How much time do you usually have? <span style="opacity:0.6; font-weight:400;">(optional)</span></p>
+      <div class="time-grid" id="timeGrid">${timeCells}</div>
+      <p class="time-note">This is used for context and a sustainability note only — the journey calculation is based on pages per day × days per week.</p>
+
+      <div class="inline-error${state.step2Error?' visible':''}" id="step2Error">${state.step2Error||''}</div>
+
+      <div class="btn-row">
+        <button type="button" class="btn btn-secondary" data-action="back-step1">Back</button>
+        <button type="button" class="btn btn-primary" data-action="calculate" style="flex:2;">Calculate My Hifz Journey</button>
+      </div>
+    </div>
+  </div>`;
+}
+
+function renderResults(){
+  if (isFullyMemorised()){
+    return `
+    <div class="section rise-in">
+      <div class="card">
+        <div class="fully-memorised-banner">
+          <div class="icon">✦</div>
+          <p>Your Quran is already marked as fully memorised.</p>
+        </div>
+        <div class="btn-row">
+          <button type="button" class="btn btn-secondary" data-action="edit-plan">Edit My Plan</button>
+          <button type="button" class="btn btn-primary" data-action="start-over">Start Over</button>
+        </div>
+      </div>
+    </div>`;
+  }
+
+  const currentCount = state.selectedJuz.size;
+  const remainingPages = getRemainingPagesForTarget();
+  const weeklyPace = getWeeklyPace();
+  const weeks = getEstimatedWeeks(remainingPages, weeklyPace);
+  const durationLabel = formatDuration(weeks);
+  const completionDate = (isFinite(weeks) && weeks > 0) ? addDays(new Date(), Math.round(weeks*7)) : null;
+
+  let targetLabel = 'Juz 30';
+  if (state.planMode === 'specificJuz' && state.targetJuzNumber) targetLabel = `Juz ${state.targetJuzNumber}`;
+
+  const specificAlreadyReached = state.planMode === 'specificJuz' && state.targetJuzNumber && state.selectedJuz.has(state.targetJuzNumber);
+
+  const milestone = getNextMilestone();
+  const paceRows = getPaceComparisonRows();
+  const yearRows = getJourneyByYear();
+
+  // Timeline
+  const nextJuz = getUnfinishedJuzSorted()[0];
+  const timelineItems = Array.from({length:TOTAL_JUZ},(_,i)=>i+1).map(j => {
+    const completed = state.selectedJuz.has(j);
+    const isCurrent = j === nextJuz;
+    const isTarget = state.planMode === 'specificJuz' && state.targetJuzNumber === j;
+    let cls = 'timeline-item';
+    if (completed) cls += ' completed';
+    if (isCurrent) cls += ' current';
+    if (isTarget) cls += ' target';
+    return `<div class="${cls}">
+      <div class="connector"></div>
+      ${isCurrent ? '<span class="here-tag">YOU ARE HERE</span>' : ''}
+      <div class="node">${j}</div>
+      ${isTarget ? '<span class="target-tag">TARGET</span>' : ''}
+    </div>`;
+  }).join('');
+
+  // Target date block
+  let targetDateBlockHtml = '';
+  if (state.planMode === 'targetDate'){
+    const req = getRequiredPaceForTargetDate();
+    if (req.invalid && req.reason === 'past'){
+      targetDateBlockHtml = `
+      <div class="section">
+        <div class="card">
+          <p class="field-label" style="margin-bottom:8px;">Target date</p>
+          <div class="inline-error visible">Your selected target date (${formatDateHuman(req.targetDateObj)}) has already passed. Edit your plan to choose a future date and calculate a required pace.</div>
+        </div>
+      </div>`;
+    } else if (req.invalid && req.reason === 'alreadyReached'){
+      targetDateBlockHtml = `
+      <div class="section">
+        <div class="card">
+          <p class="field-label" style="margin-bottom:8px;">Target date</p>
+          <p class="section-sub" style="margin:0;">Your Quran is already fully memorised, so no target pace is needed.</p>
+        </div>
+      </div>`;
+    } else if (!req.invalid){
+      targetDateBlockHtml = `
+      <div class="section">
+        <div class="card">
+          <p class="field-label" style="margin-bottom:2px;">You want to reach Juz 30 by ${formatMonthYear(req.targetDateObj)}.</p>
+          <p class="section-sub">At your selected pace, the estimated completion date is ${completionDate ? formatDateHuman(completionDate) : '—'}. To reach the selected date, the calculated pace would be:</p>
+          <div class="target-compare">
+            <div class="tc-box">
+              <p class="tc-label">Your selected pace</p>
+              <p class="tc-value">${getPaceLabel()} × ${state.daysPerWeek} days/week</p>
+            </div>
+            <div class="tc-box required">
+              <p class="tc-label">Required pace</p>
+              <p class="tc-value">~${formatNum(req.requiredPagesPerDay,2)} pages × ${req.requiredDaysPerWeek} days/week</p>
+            </div>
+          </div>
+        </div>
+      </div>`;
+    }
+  }
+
+  const paceRowsHtml = paceRows.length ? paceRows.map(r => `
+    <div class="compare-row${r.isUserPace?' highlight':''}">
+      <span class="cr-pace">${r.label}${r.isUserPace?'<span class="cr-tag">Your pace</span>':''}</span>
+      <span class="cr-time">${r.duration}</span>
+    </div>
+  `).join('') : '<p class="empty-note">Not enough information to compare paces yet.</p>';
+
+  const yearRowsHtml = yearRows.length ? yearRows.map(y => `
+    <div class="year-row">
+      <span class="yr">${y.year}</span>
+      <span class="yr-range">Juz ${y.first}${y.first!==y.last ? ' → Juz '+y.last : ''}</span>
+    </div>
+  `).join('') : '<p class="empty-note">Set a valid pace to see your year-by-year journey.</p>';
+
+  return `
+  <div class="section rise-in">
+    <div class="card">
+      <div class="hero-journey">
+        <p class="eyebrow">Your Hifz Journey</p>
+        <div class="journey-line">
+          <div><div class="juz-num">${currentCount}</div><div class="juz-caption">Juz now</div></div>
+          <div class="arrow">→</div>
+          <div><div class="juz-num">${state.planMode==='specificJuz' ? state.targetJuzNumber : 30}</div><div class="juz-caption">${state.planMode==='specificJuz' ? 'Target Juz' : 'Juz 30'}</div></div>
+        </div>
+      </div>
+
+      ${specificAlreadyReached ? `
+      <div class="completion-line">
+        <p class="label">Target status</p>
+        <p class="value" style="font-size:20px;">${targetLabel} is already memorised.</p>
+      </div>` : `
+      <div class="completion-line">
+        <p class="label">Estimated completion</p>
+        <p class="value">${durationLabel}</p>
+        <p class="pace-note">At your current pace of ${getPaceLabel()} × ${state.daysPerWeek} days/week${completionDate ? ' — around ' + formatMonthYear(completionDate) : ''}.</p>
+      </div>`}
+
+      <div class="summary-grid">
+        <div class="summary-cell"><p class="k">Current</p><p class="v">${currentCount} Juz</p></div>
+        <div class="summary-cell"><p class="k">Pace</p><p class="v" style="font-size:15px;">${getPaceLabel()} × ${state.daysPerWeek}d/wk</p></div>
+        <div class="summary-cell"><p class="k">Weekly</p><p class="v" style="font-size:15px;">${formatNum(weeklyPace,2)} pages/week</p></div>
+        <div class="summary-cell"><p class="k">Remaining</p><p class="v" style="font-size:15px;">${specificAlreadyReached ? '0' : '~'+Math.round(remainingPages)} pages</p></div>
+        <div class="summary-cell full"><p class="k">Estimated Completion</p><p class="v">${specificAlreadyReached ? 'Already reached' : durationLabel}</p></div>
+      </div>
+    </div>
+  </div>
+
+  ${targetDateBlockHtml}
+
+  <div class="section">
+    <div class="card">
+      <h2 class="section-heading" style="font-size:20px;">Your Hifz Timeline</h2>
+      <p class="section-sub">Memorised: ${formatJuzRanges(getSelectedJuzSorted())}</p>
+      <div class="timeline-scroll">
+        <div class="timeline-track">${timelineItems}</div>
+      </div>
+      <div class="timeline-legend">
+        <span class="lg-item"><span class="lg-dot" style="background:var(--deep-green);"></span>Completed</span>
+        <span class="lg-item"><span class="lg-dot" style="background:var(--gold);"></span>You are here</span>
+        <span class="lg-item"><span class="lg-dot" style="background:var(--ivory); border:1.5px solid var(--border-gold);"></span>Remaining</span>
+      </div>
+    </div>
+  </div>
+
+  ${milestone ? `
+  <div class="section">
+    <div class="card">
+      <p class="field-label" style="margin-bottom:14px;">Your next milestone</p>
+      <div class="milestone-box">
+        <div class="m-juz">Juz ${milestone.nextJuz}</div>
+        <div class="m-text"><p>${isFinite(milestone.weeks) ? 'Approximately ' + formatDuration(milestone.weeks) + ' at your current pace.' : 'Set a valid daily pace to estimate timing.'}</p></div>
+      </div>
+    </div>
+  </div>` : ''}
+
+  <div class="section">
+    <div class="card">
+      <h2 class="section-heading" style="font-size:20px;">What would different paces look like?</h2>
+      <p class="section-sub">This isn't a ranking — simply the mathematical differences so you can choose what fits your circumstances.</p>
+      <div class="compare-list">${paceRowsHtml}</div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="card">
+      <h2 class="section-heading" style="font-size:20px;">Your Journey by Year</h2>
+      <div class="year-list">${yearRowsHtml}</div>
+    </div>
+  </div>
+
+  <div class="section" style="margin-bottom:0;">
+    <div class="btn-row">
+      <button type="button" class="btn btn-secondary" data-action="edit-plan">Edit My Plan</button>
+      <button type="button" class="btn btn-primary" data-action="start-over">Start Over</button>
+    </div>
+  </div>
+  `;
+}
+
+/* =========================================================
+   EVENT HANDLERS
+   ========================================================= */
+
+/* --- lightweight, targeted updates (no full re-render) --- */
+function updateJuzSelectionUI(){
+  const grid = document.getElementById('juzGrid');
+  if (grid){
+    grid.querySelectorAll('.juz-cell').forEach(cell => {
+      const j = parseInt(cell.dataset.juz, 10);
+      cell.classList.toggle('selected', state.selectedJuz.has(j));
+      cell.setAttribute('aria-pressed', state.selectedJuz.has(j));
+    });
+  }
+  const countEl = document.getElementById('juzCount');
+  const listEl = document.getElementById('juzList');
+  if (countEl) countEl.textContent = `${state.selectedJuz.size} Juz memorised`;
+  if (listEl) listEl.textContent = `Memorised: ${state.selectedJuz.size ? formatJuzRanges(getSelectedJuzSorted()) : 'None yet'}`;
+
+  // Refresh target-Juz dropdown "(already memorised)" annotations without losing selection.
+  const targetSelect = document.getElementById('targetJuzSelect');
+  if (targetSelect){
+    const currentVal = targetSelect.value;
+    Array.from(targetSelect.options).forEach(opt => {
+      if (!opt.value) return;
+      const j = parseInt(opt.value, 10);
+      opt.textContent = `Juz ${j}${state.selectedJuz.has(j) ? ' (already memorised)' : ''}`;
+    });
+    targetSelect.value = currentVal;
+  }
+}
+
+function clearStep1Error(){
+  state.step1Error = '';
+  const el = document.getElementById('step1Error');
+  if (el){ el.textContent = ''; el.classList.remove('visible'); }
+}
+function showStep1Error(msg){
+  state.step1Error = msg;
+  const el = document.getElementById('step1Error');
+  if (el){ el.textContent = msg; el.classList.add('visible'); }
+}
+function clearStep2Error(){
+  state.step2Error = '';
+  const el = document.getElementById('step2Error');
+  if (el){ el.textContent = ''; el.classList.remove('visible'); }
+}
+function showStep2Error(msg){
+  state.step2Error = msg;
+  const el = document.getElementById('step2Error');
+  if (el){ el.textContent = msg; el.classList.add('visible'); }
+}
+
+function afterRenderBindings(){
+  if (state.screen === 'step1') bindStep1();
+  else if (state.screen === 'step2') bindStep2();
+  else bindResults();
+}
+
+function bindStep1(){
+  const grid = document.getElementById('juzGrid');
+  grid.addEventListener('click', (e) => {
+    const cell = e.target.closest('.juz-cell');
+    if (!cell) return;
+    const j = parseInt(cell.dataset.juz, 10);
+    if (state.selectedJuz.has(j)) state.selectedJuz.delete(j);
+    else state.selectedJuz.add(j);
+    updateJuzSelectionUI();
+  });
+
+  document.querySelector('[data-action="open-range"]').addEventListener('click', () => {
+    const panel = document.getElementById('rangePanel');
+    panel.style.display = panel.style.display === 'none' ? 'flex' : 'none';
+  });
+  document.querySelector('[data-action="select-all"]').addEventListener('click', () => {
+    for (let j=1;j<=TOTAL_JUZ;j++) state.selectedJuz.add(j);
+    updateJuzSelectionUI();
+  });
+  document.querySelector('[data-action="clear-all"]').addEventListener('click', () => {
+    state.selectedJuz.clear();
+    updateJuzSelectionUI();
+  });
+  document.querySelector('[data-action="apply-range"]').addEventListener('click', () => {
+    const from = parseInt(document.getElementById('rangeFrom').value, 10);
+    const to = parseInt(document.getElementById('rangeTo').value, 10);
+    const lo = Math.min(from, to), hi = Math.max(from, to);
+    for (let j=lo;j<=hi;j++) state.selectedJuz.add(j);
+    updateJuzSelectionUI();
+  });
+
+  // Plan mode radios
+  const planModeGroup = document.getElementById('planModeGroup');
+  planModeGroup.querySelectorAll('.option-row').forEach(row => {
+    row.addEventListener('click', () => {
+      const mode = row.dataset.mode;
+      state.planMode = mode;
+      clearStep1Error();
+      planModeGroup.querySelectorAll('.option-row').forEach(r => r.classList.toggle('selected', r.dataset.mode === mode));
+      planModeGroup.querySelectorAll('input[type=radio]').forEach(r => { r.checked = (r.value === mode); });
+      document.getElementById('specificJuzPanel').classList.toggle('visible', mode === 'specificJuz');
+      document.getElementById('targetDatePanel').classList.toggle('visible', mode === 'targetDate');
+    });
+  });
+
+  const targetJuzSelect = document.getElementById('targetJuzSelect');
+  targetJuzSelect.addEventListener('change', () => {
+    const v = parseInt(targetJuzSelect.value, 10);
+    state.targetJuzNumber = isFinite(v) ? v : null;
+    clearStep1Error();
+  });
+
+  const targetDateInput = document.getElementById('targetDateInput');
+  targetDateInput.addEventListener('input', () => {
+    state.targetDate = targetDateInput.value;
+    clearStep1Error();
+  });
+
+  document.querySelector('[data-action="go-step2"]').addEventListener('click', () => {
+    if (state.planMode === 'specificJuz' && !state.targetJuzNumber){
+      showStep1Error('Please select a target Juz to continue.');
+      return;
+    }
+    if (state.planMode === 'targetDate' && !state.targetDate){
+      showStep1Error('Please select a target date to continue.');
+      return;
+    }
+    clearStep1Error();
+    state.screen = 'step2';
+    render();
+  });
+}
+
+function bindStep2(){
+  const paceGrid = document.getElementById('paceGrid');
+  paceGrid.addEventListener('click', (e) => {
+    const cell = e.target.closest('.pace-cell');
+    if (!cell) return;
+    state.pacePresetId = cell.dataset.pace;
+    clearStep2Error();
+    paceGrid.querySelectorAll('.pace-cell').forEach(c => c.classList.toggle('selected', c.dataset.pace === state.pacePresetId));
+    document.getElementById('customPaceRow').classList.toggle('visible', state.pacePresetId === 'custom');
+    if (state.pacePresetId === 'custom') document.getElementById('customPaceInput').focus();
+  });
+
+  document.getElementById('customPaceInput').addEventListener('input', (e) => {
+    state.customPagesPerDay = e.target.value;
+    clearStep2Error();
+  });
+
+  const daysGrid = document.getElementById('daysGrid');
+  daysGrid.addEventListener('click', (e) => {
+    const cell = e.target.closest('.day-cell');
+    if (!cell) return;
+    state.daysPerWeek = parseInt(cell.dataset.day, 10);
+    clearStep2Error();
+    daysGrid.querySelectorAll('.day-cell').forEach(c => c.classList.toggle('selected', parseInt(c.dataset.day,10) === state.daysPerWeek));
+  });
+
+  const timeGrid = document.getElementById('timeGrid');
+  timeGrid.addEventListener('click', (e) => {
+    const cell = e.target.closest('.time-cell');
+    if (!cell) return;
+    const t = cell.dataset.time;
+    state.timeOption = (state.timeOption === t) ? null : t;
+    timeGrid.querySelectorAll('.time-cell').forEach(c => c.classList.toggle('selected', c.dataset.time === state.timeOption));
+  });
+
+  document.querySelector('[data-action="back-step1"]').addEventListener('click', () => {
+    state.screen = 'step1';
+    render();
+  });
+
+  document.querySelector('[data-action="calculate"]').addEventListener('click', () => {
+    if (!state.daysPerWeek || state.daysPerWeek < 1){
+      showStep2Error('Please select how many days per week you can memorise.');
+      return;
+    }
+    const pagesPerDay = getDailyPagesPerDay();
+    if (!(pagesPerDay > 0)){
+      showStep2Error('Please enter a daily pace greater than 0.');
+      return;
+    }
+    clearStep2Error();
+    state.screen = 'results';
+    render();
+  });
+}
+
+function bindResults(){
+  const editBtn = document.querySelector('[data-action="edit-plan"]');
+  if (editBtn) editBtn.addEventListener('click', () => {
+    state.screen = 'step2';
+    render();
+  });
+  const resetBtn = document.querySelector('[data-action="start-over"]');
+  if (resetBtn) resetBtn.addEventListener('click', () => {
+    state = defaultState();
+    render();
+  });
+}
+
+/* =========================================================
+   INITIALIZATION
+   ========================================================= */
+function init(){
+  render();
+}
+
+document.addEventListener('DOMContentLoaded', init);
+</script>
+</body>
+</html>
