@@ -60,6 +60,7 @@
 
   /* ---------- HEADER ---------- */
   header.top{
+    position:relative;
     padding:38px 20px 28px;
     text-align:center;
     border-bottom:1px solid var(--border-gold);
@@ -95,6 +96,56 @@
     color:var(--olive);
     margin:10px auto 0;
     max-width:420px;
+  }
+
+  /* ---------- LANGUAGE TOGGLE ---------- */
+  .lang-toggle{
+    position:absolute;
+    top:18px;
+    right:14px;
+    display:flex;
+    align-items:stretch;
+    border:1px solid var(--border-gold);
+    border-radius:22px;
+    overflow:hidden;
+    background:var(--ivory);
+    box-shadow:var(--shadow-sm);
+  }
+  .lang-toggle button{
+    font-family:var(--sans);
+    font-size:12px;
+    font-weight:700;
+    letter-spacing:0.5px;
+    padding:0 14px;
+    min-width:44px;
+    min-height:40px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    border:none;
+    background:transparent;
+    color:var(--olive);
+    cursor:pointer;
+    transition:background 150ms ease, color 150ms ease;
+  }
+  .lang-toggle button + button{
+    border-left:1px solid var(--border-gold);
+  }
+  .lang-toggle button.active{
+    background:var(--deep-green);
+    color:var(--cream);
+  }
+  .lang-toggle button:not(.active):hover{
+    background:rgba(184,154,90,0.14);
+    color:var(--deep-green);
+  }
+  .lang-toggle button:focus-visible{
+    outline:2px solid var(--gold);
+    outline-offset:-3px;
+  }
+  @media (max-width:360px){
+    .lang-toggle{ top:12px; right:10px; }
+    .lang-toggle button{ min-width:38px; min-height:36px; padding:0 10px; font-size:11px; }
   }
 
   /* ---------- STEP INDICATOR ---------- */
@@ -817,17 +868,21 @@
 <body>
 
 <header class="top">
+  <div class="lang-toggle" id="langToggle" role="group" aria-label="Language / Bahasa">
+    <button type="button" data-lang="en" aria-pressed="true">EN</button>
+    <button type="button" data-lang="bm" aria-pressed="false">BM</button>
+  </div>
   <p class="brand-mark">QURRA</p>
   <p class="tagline">LEARN · PRESERVE · GROW</p>
-  <h1 class="app-title">Hifz Timeline</h1>
-  <p class="app-subtitle">Plan your path from where you are to where you want to go.</p>
+  <h1 class="app-title" id="appTitle">Hifz Timeline</h1>
+  <p class="app-subtitle" id="appSubtitle">Plan your path from where you are to where you want to go.</p>
 </header>
 
 <div class="step-indicator" id="stepIndicator"></div>
 
 <main class="wrap" id="app"></main>
 
-<footer class="app-footer wrap">A QURRA product — deterministic estimates to help you plan, not a guarantee.</footer>
+<footer class="app-footer wrap" id="footerNote">A QURRA product — deterministic estimates to help you plan, not a guarantee.</footer>
 
 <script>
 /* =========================================================
@@ -840,14 +895,21 @@ const WEEKS_PER_MONTH = 4.345;
 const WEEKS_PER_YEAR = 52.143;
 
 const PACE_PRESETS = [
-  { id:'quarter', label:'¼ page', value:0.25 },
-  { id:'half',    label:'½ page', value:0.5 },
-  { id:'one',     label:'1 page', value:1 },
-  { id:'two',     label:'2 pages', value:2 },
-  { id:'custom',  label:'Custom', value:null }
+  { id:'quarter', key:'paceQuarter', value:0.25 },
+  { id:'half',    key:'paceHalf',    value:0.5 },
+  { id:'one',     key:'paceOne',     value:1 },
+  { id:'two',     key:'paceTwo',     value:2 },
+  { id:'custom',  key:'paceCustom',  value:null }
 ];
 
-const TIME_OPTIONS = ['15 min','30 min','45 min','60 min','90 min','2+ hours'];
+const TIME_OPTIONS = [
+  { id:'min15',     key:'time15' },
+  { id:'min30',     key:'time30' },
+  { id:'min45',     key:'time45' },
+  { id:'min60',     key:'time60' },
+  { id:'min90',     key:'time90' },
+  { id:'hour2plus', key:'time2plus' }
+];
 
 const COMPARISON_SCENARIOS = [
   { pages:0.25, days:5 },
@@ -857,7 +919,261 @@ const COMPARISON_SCENARIOS = [
   { pages:1,    days:6 }
 ];
 
-const MONTHS = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+const MONTHS = {
+  en: ['January','February','March','April','May','June','July','August','September','October','November','December'],
+  bm: ['Januari','Februari','Mac','April','Mei','Jun','Julai','Ogos','September','Oktober','November','Disember']
+};
+
+/* =========================================================
+   I18N — centralized translation dictionary
+   ========================================================= */
+const I18N = {
+  en: {
+    appTitle: 'Hifz Timeline',
+    appSubtitle: 'Plan your path from where you are to where you want to go.',
+    footerNote: 'A QURRA product — deterministic estimates to help you plan, not a guarantee.',
+
+    stepIndicatorStep1: '1 · Where you are',
+    stepIndicatorStep2: '2 · Your pace',
+    stepIndicatorResults: 'Results',
+
+    step1Heading: 'Where are you in your Hifz journey?',
+    step1Sub: 'How much have you memorised?',
+    selectRange: 'Select range',
+    selectAll: 'Select all',
+    clearAll: 'Clear all',
+    rangeFrom: 'From',
+    rangeTo: 'To',
+    rangeApply: 'Apply',
+    planTowardQuestion: 'What would you like to plan toward?',
+    optionalTag: '(optional)',
+    planAll30: 'Complete all 30 Juz',
+    planSpecificJuz: 'A specific Juz',
+    planTargetDate: 'A target date',
+    chooseJuzPlaceholder: 'Choose a Juz…',
+    alreadyMemorisedSuffix: '(already memorised)',
+    continueBtn: 'Continue',
+    errTargetJuz: 'Please select a target Juz to continue.',
+    errTargetDate: 'Please select a target date to continue.',
+
+    step2Heading: 'How do you want to build your Hifz?',
+    step2Sub: 'Choose your daily new-Hifz pace.',
+    paceQuarter: '¼ page',
+    paceHalf: '½ page',
+    paceOne: '1 page',
+    paceTwo: '2 pages',
+    paceCustom: 'Custom',
+    pagesPerDayLabel: 'Pages per day',
+    customPacePlaceholder: 'e.g. 1.5',
+    daysPerWeekQuestion: 'How many days per week?',
+    timeQuestion: 'How much time do you usually have?',
+    time15: '15 min',
+    time30: '30 min',
+    time45: '45 min',
+    time60: '60 min',
+    time90: '90 min',
+    time2plus: '2+ hours',
+    timeNote: 'This is used for context and a sustainability note only — the journey calculation is based on pages per day × days per week.',
+    backBtn: 'Back',
+    calculateBtn: 'Calculate My Hifz Journey',
+    errDaysPerWeek: 'Please choose how many days per week you can memorise.',
+    errCustomPace: 'Please enter a valid custom pace greater than 0.',
+
+    fullyMemorisedText: 'Your Quran is already marked as fully memorised.',
+    yourHifzJourney: 'Your Hifz Journey',
+    juzNowCaption: 'Juz now',
+    targetJuzCaption: 'Target Juz',
+    juz30Caption: 'Juz 30',
+    estimatedCompletionLabel: 'Estimated completion',
+    targetStatusLabel: 'Target status',
+    alreadyMemorisedTarget: '{juz} is already memorised.',
+    paceNotePrefix: 'At your current pace of {pace} × {days} days/week',
+    paceNoteAround: ' — around {date}',
+    summaryCurrent: 'Current',
+    summaryPace: 'Pace',
+    summaryWeekly: 'Weekly',
+    summaryRemaining: 'Remaining',
+    summaryEstCompletion: 'Estimated Completion',
+    alreadyReachedShort: 'Already reached',
+
+    targetDateHeaderLabel: 'Target date',
+    targetDatePastMsg: 'Your selected target date ({date}) has already passed. Edit your plan to choose a future date and calculate a required pace.',
+    targetDateAlreadyReachedMsg: 'Your Quran is already fully memorised, so no target pace is needed.',
+    targetDateWantMsg: 'You want to reach Juz 30 by {date}.',
+    targetDateExplain: 'At your selected pace, the estimated completion date is {date}. To reach the selected date, the calculated pace would be:',
+    yourSelectedPace: 'Your selected pace',
+    requiredPace: 'Required pace',
+
+    hifzTimelineHeading: 'Your Hifz Timeline',
+    legendCompleted: 'Completed',
+    legendHere: 'You are here',
+    legendRemaining: 'Remaining',
+    hereTag: 'YOU ARE HERE',
+    targetTag: 'TARGET',
+
+    nextMilestoneHeading: 'Your next milestone',
+    milestoneApprox: 'Approximately {duration} at your current pace.',
+    milestoneSetPace: 'Set a valid daily pace to estimate timing.',
+
+    paceCompareHeading: 'What would different paces look like?',
+    paceCompareSub: "This isn't a ranking — simply the mathematical differences so you can choose what fits your circumstances.",
+    yourPaceTag: 'Your pace',
+    noCompareData: 'Not enough information to compare paces yet.',
+
+    yearByYearHeading: 'Your Journey by Year',
+    yearByYearEmpty: 'Set a valid pace to see your year-by-year journey.',
+
+    editPlanBtn: 'Edit My Plan',
+    startOverBtn: 'Start Over',
+
+    juzMemorisedCount: '{n} Juz memorised',
+    memorisedList: 'Memorised: {list}',
+    noneYet: 'None yet',
+
+    durWeek: 'week',
+    durWeeks: 'weeks',
+    durMonth: 'month',
+    durMonths: 'months',
+    durYear: 'year',
+    durYears: 'years',
+    lessThanWeek: 'less than a week',
+    notCalculable: 'Not calculable at this pace',
+
+    daysPerWeekUnit: 'days/week',
+    pagesUnit: 'pages',
+    pagesPerWeekUnit: 'pages/week',
+    shortDaysAbbrev: 'd/wk'
+  },
+  bm: {
+    appTitle: 'Garis Masa Hafazan',
+    appSubtitle: 'Rancang perjalanan hafazan anda dari kedudukan semasa hingga ke sasaran.',
+    footerNote: 'Produk QURRA — anggaran deterministik untuk membantu anda merancang, bukan jaminan.',
+
+    stepIndicatorStep1: '1 · Kedudukan anda',
+    stepIndicatorStep2: '2 · Kadar anda',
+    stepIndicatorResults: 'Hasil',
+
+    step1Heading: 'Di mana kedudukan hafazan anda?',
+    step1Sub: 'Berapa banyak yang telah anda hafal?',
+    selectRange: 'Pilih julat',
+    selectAll: 'Pilih semua',
+    clearAll: 'Kosongkan semua',
+    rangeFrom: 'Dari',
+    rangeTo: 'Hingga',
+    rangeApply: 'Guna',
+    planTowardQuestion: 'Apakah sasaran perancangan anda?',
+    optionalTag: '(pilihan)',
+    planAll30: 'Lengkapkan kesemua 30 Juz',
+    planSpecificJuz: 'Juz tertentu',
+    planTargetDate: 'Tarikh sasaran',
+    chooseJuzPlaceholder: 'Pilih satu Juz…',
+    alreadyMemorisedSuffix: '(telah dihafal)',
+    continueBtn: 'Teruskan',
+    errTargetJuz: 'Sila pilih Juz sasaran untuk teruskan.',
+    errTargetDate: 'Sila pilih tarikh sasaran untuk teruskan.',
+
+    step2Heading: 'Bagaimana anda ingin membina hafazan?',
+    step2Sub: 'Pilih kadar hafazan baharu harian anda.',
+    paceQuarter: '¼ halaman',
+    paceHalf: '½ halaman',
+    paceOne: '1 halaman',
+    paceTwo: '2 halaman',
+    paceCustom: 'Tersuai',
+    pagesPerDayLabel: 'Halaman sehari',
+    customPacePlaceholder: 'cth. 1.5',
+    daysPerWeekQuestion: 'Berapa hari seminggu?',
+    timeQuestion: 'Berapa banyak masa yang biasanya anda ada?',
+    time15: '15 minit',
+    time30: '30 minit',
+    time45: '45 minit',
+    time60: '60 minit',
+    time90: '90 minit',
+    time2plus: '2+ jam',
+    timeNote: 'Ini digunakan sebagai konteks dan nota kemampanan sahaja — pengiraan perjalanan adalah berdasarkan halaman sehari × hari seminggu.',
+    backBtn: 'Kembali',
+    calculateBtn: 'Kira Perjalanan Hafazan Saya',
+    errDaysPerWeek: 'Sila pilih bilangan hari seminggu.',
+    errCustomPace: 'Sila masukkan kadar tersuai yang sah.',
+
+    fullyMemorisedText: 'Al-Quran anda telah ditandakan sebagai sepenuhnya dihafal.',
+    yourHifzJourney: 'Perjalanan Hafazan Anda',
+    juzNowCaption: 'Juz semasa',
+    targetJuzCaption: 'Juz sasaran',
+    juz30Caption: 'Juz 30',
+    estimatedCompletionLabel: 'Anggaran selesai',
+    targetStatusLabel: 'Status sasaran',
+    alreadyMemorisedTarget: '{juz} telah pun dihafal.',
+    paceNotePrefix: 'Pada kadar semasa anda iaitu {pace} × {days} hari seminggu',
+    paceNoteAround: ' — sekitar {date}',
+    summaryCurrent: 'Semasa',
+    summaryPace: 'Kadar',
+    summaryWeekly: 'Seminggu',
+    summaryRemaining: 'Baki',
+    summaryEstCompletion: 'Anggaran Selesai',
+    alreadyReachedShort: 'Telah dicapai',
+
+    targetDateHeaderLabel: 'Tarikh sasaran',
+    targetDatePastMsg: 'Tarikh sasaran yang dipilih ({date}) telah berlalu. Ubah rancangan anda untuk memilih tarikh akan datang dan kira kadar yang diperlukan.',
+    targetDateAlreadyReachedMsg: 'Al-Quran anda telah sepenuhnya dihafal, jadi tiada kadar sasaran diperlukan.',
+    targetDateWantMsg: 'Anda ingin mencapai Juz 30 menjelang {date}.',
+    targetDateExplain: 'Pada kadar pilihan anda, anggaran tarikh selesai ialah {date}. Untuk mencapai tarikh sasaran, kadar yang diperlukan adalah:',
+    yourSelectedPace: 'Kadar pilihan anda',
+    requiredPace: 'Kadar diperlukan',
+
+    hifzTimelineHeading: 'Garis Masa Hafazan Anda',
+    legendCompleted: 'Telah selesai',
+    legendHere: 'Anda di sini',
+    legendRemaining: 'Baki',
+    hereTag: 'ANDA DI SINI',
+    targetTag: 'SASARAN',
+
+    nextMilestoneHeading: 'Sasaran seterusnya',
+    milestoneApprox: 'Kira-kira {duration} pada kadar semasa anda.',
+    milestoneSetPace: 'Tetapkan kadar harian yang sah untuk menganggarkan masa.',
+
+    paceCompareHeading: 'Bagaimana kadar yang berbeza mempengaruhi perjalanan anda?',
+    paceCompareSub: 'Ini bukan kedudukan terbaik — hanya perbezaan matematik supaya anda boleh memilih mengikut keadaan anda.',
+    yourPaceTag: 'Kadar anda',
+    noCompareData: 'Maklumat tidak mencukupi untuk membandingkan kadar lagi.',
+
+    yearByYearHeading: 'Perjalanan Anda Mengikut Tahun',
+    yearByYearEmpty: 'Tetapkan kadar yang sah untuk melihat perjalanan tahunan anda.',
+
+    editPlanBtn: 'Ubah Rancangan',
+    startOverBtn: 'Mula Semula',
+
+    juzMemorisedCount: '{n} Juz telah dihafal',
+    memorisedList: 'Telah dihafal: {list}',
+    noneYet: 'Belum ada',
+
+    durWeek: 'minggu',
+    durWeeks: 'minggu',
+    durMonth: 'bulan',
+    durMonths: 'bulan',
+    durYear: 'tahun',
+    durYears: 'tahun',
+    lessThanWeek: 'kurang seminggu',
+    notCalculable: 'Tidak dapat dikira pada kadar ini',
+
+    daysPerWeekUnit: 'hari seminggu',
+    pagesUnit: 'halaman',
+    pagesPerWeekUnit: 'halaman/minggu',
+    shortDaysAbbrev: 'h/mg'
+  }
+};
+
+/* t(key, vars) — centralized translation helper.
+   Looks up `key` in the current language dictionary, falling back to
+   English, then to the raw key. Supports {placeholder} substitution. */
+function t(key, vars){
+  const dict = I18N[state.language] || I18N.en;
+  let str = dict[key];
+  if (str === undefined) str = (I18N.en[key] !== undefined ? I18N.en[key] : key);
+  if (vars){
+    Object.keys(vars).forEach(k => { str = str.split('{' + k + '}').join(vars[k]); });
+  }
+  return str;
+}
 
 /* =========================================================
    STATE
@@ -873,16 +1189,37 @@ function defaultState(){
     customPagesPerDay: '',
     daysPerWeek: null,
     timeOption: null,
-    step1Error: '',
-    step2Error: '',
+    step1ErrorKey: '',
+    step2ErrorKey: '',
     rangeFrom: null,
     rangeTo: null
   };
 }
 var state = defaultState();
+state.language = loadLanguagePreference(); // 'en' | 'bm' — independent of calculator state / resets
+
+function loadLanguagePreference(){
+  try {
+    const v = window.localStorage.getItem('qurra_hifz_timeline_language');
+    if (v === 'en' || v === 'bm') return v;
+  } catch (e) { /* localStorage unavailable — fall back silently */ }
+  return 'en';
+}
+function persistLanguage(lang){
+  try { window.localStorage.setItem('qurra_hifz_timeline_language', lang); } catch (e) { /* best-effort only */ }
+}
+function setLanguage(lang){
+  if (lang !== 'en' && lang !== 'bm') return;
+  if (state.language === lang) return;
+  state.language = lang;
+  persistLanguage(lang);
+  render();
+}
 
 /* =========================================================
    CALCULATION FUNCTIONS
+   (all numeric logic unchanged — only display-string generation
+   below is language-aware)
    ========================================================= */
 function getSelectedJuzSorted(){
   return Array.from(state.selectedJuz).sort((a,b)=>a-b);
@@ -895,7 +1232,7 @@ function getUnfinishedJuzSorted(){
 }
 
 function formatJuzRanges(sortedArr){
-  if (!sortedArr.length) return 'None yet';
+  if (!sortedArr.length) return t('noneYet');
   const ranges = [];
   let start = sortedArr[0], end = sortedArr[0];
   for (let i=1;i<sortedArr.length;i++){
@@ -922,10 +1259,10 @@ function getDailyPagesPerDay(){
 function getPaceLabel(){
   if (state.pacePresetId === 'custom'){
     const v = parseFloat(state.customPagesPerDay);
-    return (isFinite(v) && v > 0) ? `${formatNum(v)} page${v===1?'':'s'}` : 'Custom pace';
+    return (isFinite(v) && v > 0) ? `${formatNum(v)} ${t('pagesUnit')}` : t('paceCustom');
   }
   const preset = PACE_PRESETS.find(p => p.id === state.pacePresetId);
-  return preset ? preset.label : '';
+  return preset ? t(preset.key) : '';
 }
 
 function getWeeklyPace(){
@@ -976,21 +1313,21 @@ function formatNum(n, decimals){
 }
 
 function formatDuration(weeks){
-  if (!isFinite(weeks)) return 'Not calculable at this pace';
-  if (weeks <= 0) return 'Already reached';
-  if (weeks < 1) return 'less than a week';
+  if (!isFinite(weeks)) return t('notCalculable');
+  if (weeks <= 0) return t('alreadyReachedShort');
+  if (weeks < 1) return t('lessThanWeek');
   if (weeks < 8) {
     const w = Math.round(weeks);
-    return `${w} week${w===1?'':'s'}`;
+    return `${w} ${w===1 ? t('durWeek') : t('durWeeks')}`;
   }
   const months = weeks / WEEKS_PER_MONTH;
   if (months < 18){
     const m = formatNum(months, months < 3 ? 1 : 0);
-    return `~${m} month${m==='1'?'':'s'}`;
+    return `~${m} ${m==='1' ? t('durMonth') : t('durMonths')}`;
   }
   const years = weeks / WEEKS_PER_YEAR;
   const y = formatNum(years, years < 5 ? 1 : 0);
-  return `~${y} year${y==='1'?'':'s'}`;
+  return `~${y} ${y==='1' ? t('durYear') : t('durYears')}`;
 }
 
 function getNextMilestone(){
@@ -1020,6 +1357,14 @@ function getRequiredPaceForTargetDate(){
   return { invalid:false, requiredWeeklyPace, requiredPagesPerDay, requiredDaysPerWeek, weeksAvailable, targetDateObj: target };
 }
 
+function paceValueLabel(pages){
+  if (pages === 0.25) return t('paceQuarter');
+  if (pages === 0.5) return t('paceHalf');
+  if (pages === 1) return t('paceOne');
+  if (pages === 2) return t('paceTwo');
+  return `${formatNum(pages)} ${t('pagesUnit')}`;
+}
+
 function getPaceComparisonRows(){
   const remainingPages = getRemainingPagesForTarget();
   if (remainingPages <= 0) return [];
@@ -1027,7 +1372,7 @@ function getPaceComparisonRows(){
     const weeklyPace = sc.pages * sc.days;
     const weeks = getEstimatedWeeks(remainingPages, weeklyPace);
     return {
-      label: `${paceValueLabel(sc.pages)} × ${sc.days} days/week`,
+      label: `${paceValueLabel(sc.pages)} × ${sc.days} ${t('daysPerWeekUnit')}`,
       duration: formatDuration(weeks),
       isUserPace: false
     };
@@ -1052,20 +1397,12 @@ function getPaceComparisonRows(){
     const weeklyPace = userPagesPerDay * userDays;
     const weeks = getEstimatedWeeks(remainingPages, weeklyPace);
     rows.push({
-      label: `${paceValueLabel(userPagesPerDay)} × ${userDays} days/week`,
+      label: `${paceValueLabel(userPagesPerDay)} × ${userDays} ${t('daysPerWeekUnit')}`,
       duration: formatDuration(weeks),
       isUserPace: true
     });
   }
   return rows;
-}
-
-function paceValueLabel(pages){
-  if (pages === 0.25) return '¼ page';
-  if (pages === 0.5) return '½ page';
-  if (pages === 1) return '1 page';
-  if (pages === 2) return '2 pages';
-  return `${formatNum(pages)} page${pages===1?'':'s'}`;
 }
 
 function getJourneyByYear(){
@@ -1122,11 +1459,13 @@ function addDays(date, days){
 }
 
 function formatDateHuman(date){
-  return `${date.getDate()} ${MONTHS[date.getMonth()]} ${date.getFullYear()}`;
+  const months = MONTHS[state.language] || MONTHS.en;
+  return `${date.getDate()} ${months[date.getMonth()]} ${date.getFullYear()}`;
 }
 
 function formatMonthYear(date){
-  return `${MONTHS[date.getMonth()]} ${date.getFullYear()}`;
+  const months = MONTHS[state.language] || MONTHS.en;
+  return `${months[date.getMonth()]} ${date.getFullYear()}`;
 }
 
 function todayISODate(){
@@ -1144,6 +1483,7 @@ const appEl = document.getElementById('app');
 const stepIndicatorEl = document.getElementById('stepIndicator');
 
 function render(){
+  renderStaticChrome();
   renderStepIndicator();
   if (state.screen === 'step1') appEl.innerHTML = renderStep1();
   else if (state.screen === 'step2') appEl.innerHTML = renderStep2();
@@ -1154,16 +1494,35 @@ function render(){
   afterRenderBindings();
 }
 
+function renderStaticChrome(){
+  document.documentElement.setAttribute('lang', state.language === 'bm' ? 'ms' : 'en');
+  const titleEl = document.getElementById('appTitle');
+  const subEl = document.getElementById('appSubtitle');
+  const footEl = document.getElementById('footerNote');
+  if (titleEl) titleEl.textContent = t('appTitle');
+  if (subEl) subEl.textContent = t('appSubtitle');
+  if (footEl) footEl.textContent = t('footerNote');
+
+  const toggle = document.getElementById('langToggle');
+  if (toggle){
+    toggle.querySelectorAll('button[data-lang]').forEach(btn => {
+      const active = btn.dataset.lang === state.language;
+      btn.classList.toggle('active', active);
+      btn.setAttribute('aria-pressed', active ? 'true' : 'false');
+    });
+  }
+}
+
 function renderStepIndicator(){
   const steps = [
-    { id:'step1', label:'1 · Where you are' },
-    { id:'step2', label:'2 · Your pace' },
-    { id:'results', label:'Results' }
+    { id:'step1', key:'stepIndicatorStep1' },
+    { id:'step2', key:'stepIndicatorStep2' },
+    { id:'results', key:'stepIndicatorResults' }
   ];
   stepIndicatorEl.innerHTML = steps.map((s,i) => {
     const active = state.screen === s.id;
     return (i>0 ? '<span class="dot"></span>' : '') +
-      `<span class="step-label${active?' active':''}">${s.label}</span>`;
+      `<span class="step-label${active?' active':''}">${t(s.key)}</span>`;
   }).join('');
 }
 
@@ -1182,67 +1541,67 @@ function renderStep1(){
   const targetJuzOptions = Array.from({length:TOTAL_JUZ},(_,i)=>i+1).map(j=>{
     const already = state.selectedJuz.has(j);
     const sel = state.targetJuzNumber === j ? ' selected' : '';
-    return `<option value="${j}"${sel}>Juz ${j}${already?' (already memorised)':''}</option>`;
+    return `<option value="${j}"${sel}>Juz ${j}${already?' '+t('alreadyMemorisedSuffix'):''}</option>`;
   }).join('');
 
   return `
   <div class="section rise-in">
     <div class="card">
-      <h2 class="section-heading">Where are you in your Hifz journey?</h2>
-      <p class="section-sub">How much have you memorised?</p>
+      <h2 class="section-heading">${t('step1Heading')}</h2>
+      <p class="section-sub">${t('step1Sub')}</p>
 
       <div class="juz-toolbar">
-        <button type="button" class="btn-chip" data-action="open-range">Select range</button>
-        <button type="button" class="btn-chip" data-action="select-all">Select all</button>
-        <button type="button" class="btn-chip" data-action="clear-all">Clear all</button>
+        <button type="button" class="btn-chip" data-action="open-range">${t('selectRange')}</button>
+        <button type="button" class="btn-chip" data-action="select-all">${t('selectAll')}</button>
+        <button type="button" class="btn-chip" data-action="clear-all">${t('clearAll')}</button>
       </div>
 
       <div class="range-inline" id="rangePanel" style="display:none;">
-        <label for="rangeFrom">From</label>
+        <label for="rangeFrom">${t('rangeFrom')}</label>
         <select id="rangeFrom">${fromOptions}</select>
-        <label for="rangeTo">To</label>
+        <label for="rangeTo">${t('rangeTo')}</label>
         <select id="rangeTo">${toOptions}</select>
-        <button type="button" class="btn-chip" data-action="apply-range">Apply</button>
+        <button type="button" class="btn-chip" data-action="apply-range">${t('rangeApply')}</button>
       </div>
 
       <div class="juz-grid" id="juzGrid">${juzCells}</div>
 
       <div class="juz-summary" id="juzSummary">
-        <p class="count" id="juzCount">${count} Juz memorised</p>
-        <p class="list" id="juzList">Memorised: ${count ? formatJuzRanges(sortedSel) : 'None yet'}</p>
+        <p class="count" id="juzCount">${t('juzMemorisedCount', {n:count})}</p>
+        <p class="list" id="juzList">${t('memorisedList', {list: count ? formatJuzRanges(sortedSel) : t('noneYet')})}</p>
       </div>
 
       <hr class="divider">
 
-      <p class="section-sub" style="margin-bottom:12px;">What would you like to plan toward? <span style="opacity:0.7;">(optional)</span></p>
+      <p class="section-sub" style="margin-bottom:12px;">${t('planTowardQuestion')} <span style="opacity:0.7;">${t('optionalTag')}</span></p>
       <div class="option-group" id="planModeGroup">
         <label class="option-row${state.planMode==='all30'?' selected':''}" data-mode="all30">
           <input type="radio" name="planMode" value="all30" ${state.planMode==='all30'?'checked':''}>
-          <span class="option-text">Complete all 30 Juz</span>
+          <span class="option-text">${t('planAll30')}</span>
         </label>
         <label class="option-row${state.planMode==='specificJuz'?' selected':''}" data-mode="specificJuz">
           <input type="radio" name="planMode" value="specificJuz" ${state.planMode==='specificJuz'?'checked':''}>
-          <span class="option-text">A specific Juz</span>
+          <span class="option-text">${t('planSpecificJuz')}</span>
         </label>
         <div class="option-sub-panel${state.planMode==='specificJuz'?' visible':''}" id="specificJuzPanel">
           <select id="targetJuzSelect">
-            <option value="" ${state.targetJuzNumber?'':'selected'} disabled>Choose a Juz…</option>
+            <option value="" ${state.targetJuzNumber?'':'selected'} disabled>${t('chooseJuzPlaceholder')}</option>
             ${targetJuzOptions}
           </select>
         </div>
         <label class="option-row${state.planMode==='targetDate'?' selected':''}" data-mode="targetDate">
           <input type="radio" name="planMode" value="targetDate" ${state.planMode==='targetDate'?'checked':''}>
-          <span class="option-text">A target date</span>
+          <span class="option-text">${t('planTargetDate')}</span>
         </label>
         <div class="option-sub-panel${state.planMode==='targetDate'?' visible':''}" id="targetDatePanel">
           <input type="date" id="targetDateInput" value="${state.targetDate||''}">
         </div>
       </div>
 
-      <div class="inline-error${state.step1Error?' visible':''}" id="step1Error">${state.step1Error||''}</div>
+      <div class="inline-error${state.step1ErrorKey?' visible':''}" id="step1Error">${state.step1ErrorKey ? t(state.step1ErrorKey) : ''}</div>
 
       <div class="btn-row">
-        <button type="button" class="btn btn-primary btn-full" data-action="go-step2">Continue</button>
+        <button type="button" class="btn btn-primary btn-full" data-action="go-step2">${t('continueBtn')}</button>
       </div>
     </div>
   </div>`;
@@ -1251,7 +1610,7 @@ function renderStep1(){
 function renderStep2(){
   const paceCells = PACE_PRESETS.map(p => {
     const sel = state.pacePresetId === p.id;
-    return `<div class="pace-cell${sel?' selected':''}" data-pace="${p.id}">${p.label}</div>`;
+    return `<div class="pace-cell${sel?' selected':''}" data-pace="${p.id}">${t(p.key)}</div>`;
   }).join('');
 
   const dayCells = Array.from({length:7},(_,i)=>i+1).map(d => {
@@ -1259,39 +1618,39 @@ function renderStep2(){
     return `<div class="day-cell${sel?' selected':''}" data-day="${d}">${d}</div>`;
   }).join('');
 
-  const timeCells = TIME_OPTIONS.map(t => {
-    const sel = state.timeOption === t;
-    return `<div class="time-cell${sel?' selected':''}" data-time="${t}">${t}</div>`;
+  const timeCells = TIME_OPTIONS.map(opt => {
+    const sel = state.timeOption === opt.id;
+    return `<div class="time-cell${sel?' selected':''}" data-time="${opt.id}">${t(opt.key)}</div>`;
   }).join('');
 
   return `
   <div class="section rise-in">
     <div class="card">
-      <h2 class="section-heading">How do you want to build your Hifz?</h2>
-      <p class="section-sub">Choose your daily new-Hifz pace.</p>
+      <h2 class="section-heading">${t('step2Heading')}</h2>
+      <p class="section-sub">${t('step2Sub')}</p>
 
       <div class="pace-grid" id="paceGrid">${paceCells}</div>
       <div class="custom-pace-row${state.pacePresetId==='custom'?' visible':''}" id="customPaceRow">
-        <label for="customPaceInput">Pages per day</label>
-        <input type="number" id="customPaceInput" min="0.05" max="30" step="0.05" value="${state.customPagesPerDay}" placeholder="e.g. 1.5">
+        <label for="customPaceInput">${t('pagesPerDayLabel')}</label>
+        <input type="number" id="customPaceInput" min="0.05" max="30" step="0.05" value="${state.customPagesPerDay}" placeholder="${t('customPacePlaceholder')}">
       </div>
 
       <hr class="divider">
 
-      <p class="field-label">How many days per week?</p>
+      <p class="field-label">${t('daysPerWeekQuestion')}</p>
       <div class="days-grid" id="daysGrid">${dayCells}</div>
 
       <hr class="divider">
 
-      <p class="field-label">How much time do you usually have? <span style="opacity:0.6; font-weight:400;">(optional)</span></p>
+      <p class="field-label">${t('timeQuestion')} <span style="opacity:0.6; font-weight:400;">${t('optionalTag')}</span></p>
       <div class="time-grid" id="timeGrid">${timeCells}</div>
-      <p class="time-note">This is used for context and a sustainability note only — the journey calculation is based on pages per day × days per week.</p>
+      <p class="time-note">${t('timeNote')}</p>
 
-      <div class="inline-error${state.step2Error?' visible':''}" id="step2Error">${state.step2Error||''}</div>
+      <div class="inline-error${state.step2ErrorKey?' visible':''}" id="step2Error">${state.step2ErrorKey ? t(state.step2ErrorKey) : ''}</div>
 
       <div class="btn-row">
-        <button type="button" class="btn btn-secondary" data-action="back-step1">Back</button>
-        <button type="button" class="btn btn-primary" data-action="calculate" style="flex:2;">Calculate My Hifz Journey</button>
+        <button type="button" class="btn btn-secondary" data-action="back-step1">${t('backBtn')}</button>
+        <button type="button" class="btn btn-primary" data-action="calculate" style="flex:2;">${t('calculateBtn')}</button>
       </div>
     </div>
   </div>`;
@@ -1304,11 +1663,11 @@ function renderResults(){
       <div class="card">
         <div class="fully-memorised-banner">
           <div class="icon">✦</div>
-          <p>Your Quran is already marked as fully memorised.</p>
+          <p>${t('fullyMemorisedText')}</p>
         </div>
         <div class="btn-row">
-          <button type="button" class="btn btn-secondary" data-action="edit-plan">Edit My Plan</button>
-          <button type="button" class="btn btn-primary" data-action="start-over">Start Over</button>
+          <button type="button" class="btn btn-secondary" data-action="edit-plan">${t('editPlanBtn')}</button>
+          <button type="button" class="btn btn-primary" data-action="start-over">${t('startOverBtn')}</button>
         </div>
       </div>
     </div>`;
@@ -1342,9 +1701,9 @@ function renderResults(){
     if (isTarget) cls += ' target';
     return `<div class="${cls}">
       <div class="connector"></div>
-      ${isCurrent ? '<span class="here-tag">YOU ARE HERE</span>' : ''}
+      ${isCurrent ? `<span class="here-tag">${t('hereTag')}</span>` : ''}
       <div class="node">${j}</div>
-      ${isTarget ? '<span class="target-tag">TARGET</span>' : ''}
+      ${isTarget ? `<span class="target-tag">${t('targetTag')}</span>` : ''}
     </div>`;
   }).join('');
 
@@ -1356,32 +1715,32 @@ function renderResults(){
       targetDateBlockHtml = `
       <div class="section">
         <div class="card">
-          <p class="field-label" style="margin-bottom:8px;">Target date</p>
-          <div class="inline-error visible">Your selected target date (${formatDateHuman(req.targetDateObj)}) has already passed. Edit your plan to choose a future date and calculate a required pace.</div>
+          <p class="field-label" style="margin-bottom:8px;">${t('targetDateHeaderLabel')}</p>
+          <div class="inline-error visible">${t('targetDatePastMsg', {date: formatDateHuman(req.targetDateObj)})}</div>
         </div>
       </div>`;
     } else if (req.invalid && req.reason === 'alreadyReached'){
       targetDateBlockHtml = `
       <div class="section">
         <div class="card">
-          <p class="field-label" style="margin-bottom:8px;">Target date</p>
-          <p class="section-sub" style="margin:0;">Your Quran is already fully memorised, so no target pace is needed.</p>
+          <p class="field-label" style="margin-bottom:8px;">${t('targetDateHeaderLabel')}</p>
+          <p class="section-sub" style="margin:0;">${t('targetDateAlreadyReachedMsg')}</p>
         </div>
       </div>`;
     } else if (!req.invalid){
       targetDateBlockHtml = `
       <div class="section">
         <div class="card">
-          <p class="field-label" style="margin-bottom:2px;">You want to reach Juz 30 by ${formatMonthYear(req.targetDateObj)}.</p>
-          <p class="section-sub">At your selected pace, the estimated completion date is ${completionDate ? formatDateHuman(completionDate) : '—'}. To reach the selected date, the calculated pace would be:</p>
+          <p class="field-label" style="margin-bottom:2px;">${t('targetDateWantMsg', {date: formatMonthYear(req.targetDateObj)})}</p>
+          <p class="section-sub">${t('targetDateExplain', {date: completionDate ? formatDateHuman(completionDate) : '—'})}</p>
           <div class="target-compare">
             <div class="tc-box">
-              <p class="tc-label">Your selected pace</p>
-              <p class="tc-value">${getPaceLabel()} × ${state.daysPerWeek} days/week</p>
+              <p class="tc-label">${t('yourSelectedPace')}</p>
+              <p class="tc-value">${getPaceLabel()} × ${state.daysPerWeek} ${t('daysPerWeekUnit')}</p>
             </div>
             <div class="tc-box required">
-              <p class="tc-label">Required pace</p>
-              <p class="tc-value">~${formatNum(req.requiredPagesPerDay,2)} pages × ${req.requiredDaysPerWeek} days/week</p>
+              <p class="tc-label">${t('requiredPace')}</p>
+              <p class="tc-value">~${formatNum(req.requiredPagesPerDay,2)} ${t('pagesUnit')} × ${req.requiredDaysPerWeek} ${t('daysPerWeekUnit')}</p>
             </div>
           </div>
         </div>
@@ -1389,49 +1748,52 @@ function renderResults(){
     }
   }
 
+  const paceNote = t('paceNotePrefix', {pace: getPaceLabel(), days: state.daysPerWeek}) +
+    (completionDate ? t('paceNoteAround', {date: formatMonthYear(completionDate)}) : '');
+
   const paceRowsHtml = paceRows.length ? paceRows.map(r => `
     <div class="compare-row${r.isUserPace?' highlight':''}">
-      <span class="cr-pace">${r.label}${r.isUserPace?'<span class="cr-tag">Your pace</span>':''}</span>
+      <span class="cr-pace">${r.label}${r.isUserPace?`<span class="cr-tag">${t('yourPaceTag')}</span>`:''}</span>
       <span class="cr-time">${r.duration}</span>
     </div>
-  `).join('') : '<p class="empty-note">Not enough information to compare paces yet.</p>';
+  `).join('') : `<p class="empty-note">${t('noCompareData')}</p>`;
 
   const yearRowsHtml = yearRows.length ? yearRows.map(y => `
     <div class="year-row">
       <span class="yr">${y.year}</span>
       <span class="yr-range">Juz ${y.first}${y.first!==y.last ? ' → Juz '+y.last : ''}</span>
     </div>
-  `).join('') : '<p class="empty-note">Set a valid pace to see your year-by-year journey.</p>';
+  `).join('') : `<p class="empty-note">${t('yearByYearEmpty')}</p>`;
 
   return `
   <div class="section rise-in">
     <div class="card">
       <div class="hero-journey">
-        <p class="eyebrow">Your Hifz Journey</p>
+        <p class="eyebrow">${t('yourHifzJourney')}</p>
         <div class="journey-line">
-          <div><div class="juz-num">${currentCount}</div><div class="juz-caption">Juz now</div></div>
+          <div><div class="juz-num">${currentCount}</div><div class="juz-caption">${t('juzNowCaption')}</div></div>
           <div class="arrow">→</div>
-          <div><div class="juz-num">${state.planMode==='specificJuz' ? state.targetJuzNumber : 30}</div><div class="juz-caption">${state.planMode==='specificJuz' ? 'Target Juz' : 'Juz 30'}</div></div>
+          <div><div class="juz-num">${state.planMode==='specificJuz' ? state.targetJuzNumber : 30}</div><div class="juz-caption">${state.planMode==='specificJuz' ? t('targetJuzCaption') : t('juz30Caption')}</div></div>
         </div>
       </div>
 
       ${specificAlreadyReached ? `
       <div class="completion-line">
-        <p class="label">Target status</p>
-        <p class="value" style="font-size:20px;">${targetLabel} is already memorised.</p>
+        <p class="label">${t('targetStatusLabel')}</p>
+        <p class="value" style="font-size:20px;">${t('alreadyMemorisedTarget', {juz: targetLabel})}</p>
       </div>` : `
       <div class="completion-line">
-        <p class="label">Estimated completion</p>
+        <p class="label">${t('estimatedCompletionLabel')}</p>
         <p class="value">${durationLabel}</p>
-        <p class="pace-note">At your current pace of ${getPaceLabel()} × ${state.daysPerWeek} days/week${completionDate ? ' — around ' + formatMonthYear(completionDate) : ''}.</p>
+        <p class="pace-note">${paceNote}</p>
       </div>`}
 
       <div class="summary-grid">
-        <div class="summary-cell"><p class="k">Current</p><p class="v">${currentCount} Juz</p></div>
-        <div class="summary-cell"><p class="k">Pace</p><p class="v" style="font-size:15px;">${getPaceLabel()} × ${state.daysPerWeek}d/wk</p></div>
-        <div class="summary-cell"><p class="k">Weekly</p><p class="v" style="font-size:15px;">${formatNum(weeklyPace,2)} pages/week</p></div>
-        <div class="summary-cell"><p class="k">Remaining</p><p class="v" style="font-size:15px;">${specificAlreadyReached ? '0' : '~'+Math.round(remainingPages)} pages</p></div>
-        <div class="summary-cell full"><p class="k">Estimated Completion</p><p class="v">${specificAlreadyReached ? 'Already reached' : durationLabel}</p></div>
+        <div class="summary-cell"><p class="k">${t('summaryCurrent')}</p><p class="v">${currentCount} Juz</p></div>
+        <div class="summary-cell"><p class="k">${t('summaryPace')}</p><p class="v" style="font-size:15px;">${getPaceLabel()} × ${state.daysPerWeek}${t('shortDaysAbbrev')}</p></div>
+        <div class="summary-cell"><p class="k">${t('summaryWeekly')}</p><p class="v" style="font-size:15px;">${formatNum(weeklyPace,2)} ${t('pagesPerWeekUnit')}</p></div>
+        <div class="summary-cell"><p class="k">${t('summaryRemaining')}</p><p class="v" style="font-size:15px;">${specificAlreadyReached ? '0' : '~'+Math.round(remainingPages)} ${t('pagesUnit')}</p></div>
+        <div class="summary-cell full"><p class="k">${t('summaryEstCompletion')}</p><p class="v">${specificAlreadyReached ? t('alreadyReachedShort') : durationLabel}</p></div>
       </div>
     </div>
   </div>
@@ -1440,15 +1802,15 @@ function renderResults(){
 
   <div class="section">
     <div class="card">
-      <h2 class="section-heading" style="font-size:20px;">Your Hifz Timeline</h2>
-      <p class="section-sub">Memorised: ${formatJuzRanges(getSelectedJuzSorted())}</p>
+      <h2 class="section-heading" style="font-size:20px;">${t('hifzTimelineHeading')}</h2>
+      <p class="section-sub">${t('memorisedList', {list: formatJuzRanges(getSelectedJuzSorted())})}</p>
       <div class="timeline-scroll">
         <div class="timeline-track">${timelineItems}</div>
       </div>
       <div class="timeline-legend">
-        <span class="lg-item"><span class="lg-dot" style="background:var(--deep-green);"></span>Completed</span>
-        <span class="lg-item"><span class="lg-dot" style="background:var(--gold);"></span>You are here</span>
-        <span class="lg-item"><span class="lg-dot" style="background:var(--ivory); border:1.5px solid var(--border-gold);"></span>Remaining</span>
+        <span class="lg-item"><span class="lg-dot" style="background:var(--deep-green);"></span>${t('legendCompleted')}</span>
+        <span class="lg-item"><span class="lg-dot" style="background:var(--gold);"></span>${t('legendHere')}</span>
+        <span class="lg-item"><span class="lg-dot" style="background:var(--ivory); border:1.5px solid var(--border-gold);"></span>${t('legendRemaining')}</span>
       </div>
     </div>
   </div>
@@ -1456,33 +1818,33 @@ function renderResults(){
   ${milestone ? `
   <div class="section">
     <div class="card">
-      <p class="field-label" style="margin-bottom:14px;">Your next milestone</p>
+      <p class="field-label" style="margin-bottom:14px;">${t('nextMilestoneHeading')}</p>
       <div class="milestone-box">
         <div class="m-juz">Juz ${milestone.nextJuz}</div>
-        <div class="m-text"><p>${isFinite(milestone.weeks) ? 'Approximately ' + formatDuration(milestone.weeks) + ' at your current pace.' : 'Set a valid daily pace to estimate timing.'}</p></div>
+        <div class="m-text"><p>${isFinite(milestone.weeks) ? t('milestoneApprox', {duration: formatDuration(milestone.weeks)}) : t('milestoneSetPace')}</p></div>
       </div>
     </div>
   </div>` : ''}
 
   <div class="section">
     <div class="card">
-      <h2 class="section-heading" style="font-size:20px;">What would different paces look like?</h2>
-      <p class="section-sub">This isn't a ranking — simply the mathematical differences so you can choose what fits your circumstances.</p>
+      <h2 class="section-heading" style="font-size:20px;">${t('paceCompareHeading')}</h2>
+      <p class="section-sub">${t('paceCompareSub')}</p>
       <div class="compare-list">${paceRowsHtml}</div>
     </div>
   </div>
 
   <div class="section">
     <div class="card">
-      <h2 class="section-heading" style="font-size:20px;">Your Journey by Year</h2>
+      <h2 class="section-heading" style="font-size:20px;">${t('yearByYearHeading')}</h2>
       <div class="year-list">${yearRowsHtml}</div>
     </div>
   </div>
 
   <div class="section" style="margin-bottom:0;">
     <div class="btn-row">
-      <button type="button" class="btn btn-secondary" data-action="edit-plan">Edit My Plan</button>
-      <button type="button" class="btn btn-primary" data-action="start-over">Start Over</button>
+      <button type="button" class="btn btn-secondary" data-action="edit-plan">${t('editPlanBtn')}</button>
+      <button type="button" class="btn btn-primary" data-action="start-over">${t('startOverBtn')}</button>
     </div>
   </div>
   `;
@@ -1504,8 +1866,8 @@ function updateJuzSelectionUI(){
   }
   const countEl = document.getElementById('juzCount');
   const listEl = document.getElementById('juzList');
-  if (countEl) countEl.textContent = `${state.selectedJuz.size} Juz memorised`;
-  if (listEl) listEl.textContent = `Memorised: ${state.selectedJuz.size ? formatJuzRanges(getSelectedJuzSorted()) : 'None yet'}`;
+  if (countEl) countEl.textContent = t('juzMemorisedCount', {n: state.selectedJuz.size});
+  if (listEl) listEl.textContent = t('memorisedList', {list: state.selectedJuz.size ? formatJuzRanges(getSelectedJuzSorted()) : t('noneYet')});
 
   // Refresh target-Juz dropdown "(already memorised)" annotations without losing selection.
   const targetSelect = document.getElementById('targetJuzSelect');
@@ -1514,31 +1876,31 @@ function updateJuzSelectionUI(){
     Array.from(targetSelect.options).forEach(opt => {
       if (!opt.value) return;
       const j = parseInt(opt.value, 10);
-      opt.textContent = `Juz ${j}${state.selectedJuz.has(j) ? ' (already memorised)' : ''}`;
+      opt.textContent = `Juz ${j}${state.selectedJuz.has(j) ? ' ' + t('alreadyMemorisedSuffix') : ''}`;
     });
     targetSelect.value = currentVal;
   }
 }
 
 function clearStep1Error(){
-  state.step1Error = '';
+  state.step1ErrorKey = '';
   const el = document.getElementById('step1Error');
   if (el){ el.textContent = ''; el.classList.remove('visible'); }
 }
-function showStep1Error(msg){
-  state.step1Error = msg;
+function showStep1Error(key){
+  state.step1ErrorKey = key;
   const el = document.getElementById('step1Error');
-  if (el){ el.textContent = msg; el.classList.add('visible'); }
+  if (el){ el.textContent = t(key); el.classList.add('visible'); }
 }
 function clearStep2Error(){
-  state.step2Error = '';
+  state.step2ErrorKey = '';
   const el = document.getElementById('step2Error');
   if (el){ el.textContent = ''; el.classList.remove('visible'); }
 }
-function showStep2Error(msg){
-  state.step2Error = msg;
+function showStep2Error(key){
+  state.step2ErrorKey = key;
   const el = document.getElementById('step2Error');
-  if (el){ el.textContent = msg; el.classList.add('visible'); }
+  if (el){ el.textContent = t(key); el.classList.add('visible'); }
 }
 
 function afterRenderBindings(){
@@ -1607,11 +1969,11 @@ function bindStep1(){
 
   document.querySelector('[data-action="go-step2"]').addEventListener('click', () => {
     if (state.planMode === 'specificJuz' && !state.targetJuzNumber){
-      showStep1Error('Please select a target Juz to continue.');
+      showStep1Error('errTargetJuz');
       return;
     }
     if (state.planMode === 'targetDate' && !state.targetDate){
-      showStep1Error('Please select a target date to continue.');
+      showStep1Error('errTargetDate');
       return;
     }
     clearStep1Error();
@@ -1650,8 +2012,8 @@ function bindStep2(){
   timeGrid.addEventListener('click', (e) => {
     const cell = e.target.closest('.time-cell');
     if (!cell) return;
-    const t = cell.dataset.time;
-    state.timeOption = (state.timeOption === t) ? null : t;
+    const id = cell.dataset.time;
+    state.timeOption = (state.timeOption === id) ? null : id;
     timeGrid.querySelectorAll('.time-cell').forEach(c => c.classList.toggle('selected', c.dataset.time === state.timeOption));
   });
 
@@ -1662,12 +2024,12 @@ function bindStep2(){
 
   document.querySelector('[data-action="calculate"]').addEventListener('click', () => {
     if (!state.daysPerWeek || state.daysPerWeek < 1){
-      showStep2Error('Please select how many days per week you can memorise.');
+      showStep2Error('errDaysPerWeek');
       return;
     }
     const pagesPerDay = getDailyPagesPerDay();
     if (!(pagesPerDay > 0)){
-      showStep2Error('Please enter a daily pace greater than 0.');
+      showStep2Error('errCustomPace');
       return;
     }
     clearStep2Error();
@@ -1684,8 +2046,20 @@ function bindResults(){
   });
   const resetBtn = document.querySelector('[data-action="start-over"]');
   if (resetBtn) resetBtn.addEventListener('click', () => {
+    const currentLang = state.language;
     state = defaultState();
+    state.language = currentLang;
     render();
+  });
+}
+
+function bindLangToggle(){
+  const toggle = document.getElementById('langToggle');
+  if (!toggle) return;
+  toggle.addEventListener('click', (e) => {
+    const btn = e.target.closest('button[data-lang]');
+    if (!btn) return;
+    setLanguage(btn.dataset.lang);
   });
 }
 
@@ -1693,6 +2067,7 @@ function bindResults(){
    INITIALIZATION
    ========================================================= */
 function init(){
+  bindLangToggle();
   render();
 }
 
